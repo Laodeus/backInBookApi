@@ -1,0 +1,23 @@
+{
+  "name": "backInBookApi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Laodeus/backInBookApi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Laodeus/backInBookApi/issues"
+  },
+  "homepage": "https://github.com/Laodeus/backInBookApi#readme",
+  "dependencies": {
+    "koa": "^2.8.2"
+  }
+}
