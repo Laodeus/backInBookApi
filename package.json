@@ -1,0 +1,19 @@
+{
+  "name": "backinbookapi",
+  "version": "1.0.0",
+  "description": "api",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Laodeus/backInBookApi.git"
+  },
+  "author": "dylan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Laodeus/backInBookApi/issues"
+  },
+  "homepage": "https://github.com/Laodeus/backInBookApi#readme"
+}
