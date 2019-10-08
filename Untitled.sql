@@ -6,7 +6,8 @@ CREATE TABLE "books" (
   "title" int,
   "subtitle" int,
   "blanket" varchar,
-  "lang" int
+  "lang" int],
+  "genre" int
 );
 
 CREATE TABLE "authors" (
