@@ -17,7 +17,11 @@ app.use(mount('/graphql', graphqlHTTP({
   schema: mySchema,
   graphiql: true
 })));
- 
+
+app.use(mount('/',(ctx)=>{
+  ctx.body = "It's not the api that you looking for..."
+}));
+
 app.listen(port,()=>{
   console.clear();
   console.log("The magic start below at port : " + port);
