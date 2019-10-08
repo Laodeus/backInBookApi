@@ -37,13 +37,14 @@ app.use(function(ctx, next){ // si dans la route il match un public dans l'url v
 });
 // Middleware below this line is only reached if JWT token is valid
 //app.use(jwt({ secret: 'shared-secret', passthrough: true  })); // passtrough sert a quand meme processer les middleware precedent meme si l'utilisateur n'est pas logguer
-app.use(jwt({ secret: 'A very secret key', })); 
+app.use(jwt({ secret: 'A very secret key', key: 'jwtdata' })); 
  
 
 // Protected middleware
 app.use(function(ctx){
   if (ctx.url.match(/^\/api/)) {
-    ctx.body = 'protected\n';
+    console.log(ctx.state.jwtdata)
+    ctx.body = 'protected\n ';
   }
 });
  
