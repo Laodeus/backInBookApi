@@ -6,7 +6,10 @@ const app = new Koa();
  
 app.use(mount('/graphql', graphqlHTTP({
   schema: mySchema,
-  //graphiql: true
+  graphiql: true
 })));
  
-app.listen(3615);
+app.listen(3615,()=>{
+  console.clear();
+  console.log("The magic start Below!");
+});
