@@ -25,5 +25,5 @@ app.use(mount('/',(ctx)=>{
 
 app.listen(port,()=>{
   console.clear();
-  console.log("The magic start below at port : " + port);
+  console.log("The magic start below at port : " + port+ " env => " + process.env);
 });
