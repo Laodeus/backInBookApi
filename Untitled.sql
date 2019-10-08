@@ -2,11 +2,12 @@ CREATE TABLE "books" (
   "id" int,
   "author_id" int,
   "comment_id" int,
-  "stock_id" int,
   "title" int,
   "subtitle" int,
   "blanket" varchar,
-  "lang" int],
+  "lang" int,
+  "format_books" int,
+  "stock" numeric(0,10) DEFAULT 1,
   "genre" int
 );
 
@@ -16,19 +17,12 @@ CREATE TABLE "authors" (
   "surname" varchar
 );
 
-CREATE TABLE "stocks" (
-  "id" int,
-  "size" int,
-  "stock" numeric(0,10) DEFAULT 1
-);
-
 CREATE TABLE "comment" (
   "id" int,
   "user_id" int,
   "title" int,
   "com" varchar,
-  "counterN" int,
-  "counterP" int
+  "eval" numeric
 );
 
 CREATE TABLE "users" (
@@ -39,14 +33,5 @@ CREATE TABLE "users" (
   "name" int,
   "surname" int,
   "email" int,
-  "password" text,
-  "birthday" date
+  "password" text
 );
-
-ALTER TABLE "authors" ADD FOREIGN KEY ("id") REFERENCES "books" ("author_id");
-
-ALTER TABLE "comment" ADD FOREIGN KEY ("id") REFERENCES "books" ("comment_id");
-
-ALTER TABLE "books" ADD FOREIGN KEY ("stock_id") REFERENCES "stocks" ("id");
-
-ALTER TABLE "users" ADD FOREIGN KEY ("id") REFERENCES "comment" ("user_id");

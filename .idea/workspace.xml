@@ -13,6 +13,7 @@
   </component>
   <component name="ProjectId" id="1RhAklukp7T5GM2IaU9woF4J8os" />
   <component name="PropertiesComponent">
+    <property name="DBE.Init.BalloonShown" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
