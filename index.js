@@ -19,7 +19,8 @@ app.use(mount('/graphql', graphqlHTTP({
 })));
 
 app.use(mount('/',(ctx)=>{
-  ctx.body = "It's not the api that you looking for..."
+  ctx.type = 'html' 
+  ctx.body = "It's not the api that you looking for... <br /><img src='http://3.bp.blogspot.com/-uq0glR1pPUw/VqEUKKBA-eI/AAAAAAAASCw/r2tQOAZBsgY/s1600/droids.gif' />"
 }));
 
 app.listen(port,()=>{
