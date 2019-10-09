@@ -2,13 +2,13 @@ CREATE TABLE "books" (
   "id" int,
   "author_id" int,
   "comment_id" int,
-  "title" int,
-  "subtitle" int,
+  "title" text,
+  "subtitle" text,
   "blanket" varchar,
-  "lang" int,
-  "format_books" int,
+  "lang" varchar,
+  "format_books" text,
   "stock" numeric(0,10) DEFAULT 1,
-  "genre" int
+  "genre" text
 );
 
 CREATE TABLE "authors" (
@@ -20,18 +20,17 @@ CREATE TABLE "authors" (
 CREATE TABLE "comment" (
   "id" int,
   "user_id" int,
-  "title" int,
+  "title" text,
   "com" varchar,
   "eval" numeric
 );
 
 CREATE TABLE "users" (
   "id" int,
-  "privilege" int,
-  "blacklist" int,
-  "borrowing" int DEFAULT 1,
-  "name" int,
-  "surname" int,
-  "email" int,
+  "privilege" varchar,
+  "blacklist" varchar,
+  "name" text,
+  "surname" text,
+  "email" text,
   "password" text
 );
