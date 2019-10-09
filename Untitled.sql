@@ -1,24 +1,24 @@
 CREATE TABLE "books" (
   "id" int,
   "author_id" int,
-  "comment_id" int,
   "title" text,
   "subtitle" text,
   "blanket" varchar,
   "lang" varchar,
   "format_books" text,
-  "stock" numeric(0,10) DEFAULT 1,
-  "genre" text
+  "stock" numeric DEFAULT 1,
+  "genre" text,
+  "ISBN" int
 );
 
 CREATE TABLE "authors" (
   "id" int,
-  "name" varchar,
-  "surname" varchar
+  "name" varchar
 );
 
 CREATE TABLE "comment" (
   "id" int,
+  "book_id" int ,
   "user_id" int,
   "title" text,
   "com" varchar,
@@ -27,8 +27,7 @@ CREATE TABLE "comment" (
 
 CREATE TABLE "users" (
   "id" int,
-  "privilege" varchar,
-  "blacklist" varchar,
+  "role" varchar,
   "name" text,
   "surname" text,
   "email" text,
