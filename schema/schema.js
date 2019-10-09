@@ -148,7 +148,7 @@ let users = [
   }
 ];
 
-let comment = [
+let comments = [
   {
     id: "1",
     book_id: "7",
@@ -183,6 +183,7 @@ let comment = [
   }
 ];
 
+// all type
 const BookType = new GraphQLObjectType({
   name: "Book",
   fields: () => ({
@@ -194,17 +195,21 @@ const BookType = new GraphQLObjectType({
     format_book: { type: GraphQLString },
     genre: { type: GraphQLString },
     stock: { type: GraphQLInt },
-    isbn: { type: GraphQLInt },
+    ISBN: { type: GraphQLString },
     author: {
       type: AuthorType,
       resolve(parent, args) {
-        console.log(parent);
         return _.find(authors, { id: parent.author_id });
+      }
+    },
+    comment: {
+      type: GraphQLList(CommentType),
+      resolve(parent, args) {
+        return _.filter(comments, { book_id: parent.id });
       }
     }
   })
 });
-
 const AuthorType = new GraphQLObjectType({
   name: "Author",
   fields: () => ({
@@ -218,10 +223,43 @@ const AuthorType = new GraphQLObjectType({
     }
   })
 });
-
 const UserType = new GraphQLObjectType({
   name: "User",
-  fields: () => {}
+  fields: () => ({
+    email: { type: GraphQLString },
+    name: { type: GraphQLString },
+    role: { type: GraphQLString },
+    id: { type: GraphQLID },
+    comment: {
+      type: GraphQLList(CommentType),
+      resolve(parent, args) {
+        console.log(_.filter(comments, { book_id: parent.id }));
+        return _.filter(comments, { user_id: parent.id });
+      }
+    }
+  })
+});
+const CommentType = new GraphQLObjectType({
+  name: "Comment",
+  fields: () => ({
+    id: { type: GraphQLID },
+    book: {
+      type: BookType,
+      resolve(parent, args) {
+        return _.find(books, { id: parent.book_id });
+      }
+    },
+    user: {
+      type: UserType,
+      resolve(parent, args) {
+        console.log();
+        return _.find(users, { id: parent.user_id });
+      }
+    },
+    title: { type: GraphQLString },
+    com: { type: GraphQLString },
+    eval: { type: GraphQLString }
+  })
 });
 
 const RootQuery = new GraphQLObjectType({
@@ -235,6 +273,12 @@ const RootQuery = new GraphQLObjectType({
         return _.find(books, { id: args.id });
       }
     },
+    books: {
+      type: new GraphQLList(BookType),
+      resolve(parent, args) {
+        return books;
+      }
+    },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
@@ -242,12 +286,38 @@ const RootQuery = new GraphQLObjectType({
         return _.find(authors, { id: args.id });
       }
     },
-    books: {
-      type: new GraphQLList(BookType),
+    authors: {
+      type: new GraphQLList(AuthorType),
       resolve(parent, args) {
-        return books;
+        return authors;
       }
-    }
+    },
+    user: {
+      type: UserType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return _.find(users, { id: args.id });
+      }
+    },
+    users: {
+      type: new GraphQLList(UserType),
+      resolve(parent, args) {
+        return users;
+      }
+    },
+    comment: {
+      type: CommentType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return _.find(comments, { id: args.id });
+      }
+    },
+    comments: {
+      type: new GraphQLList(CommentType),
+      resolve(parent, args) {
+        return comments;
+      }
+    },
   }
 });
 
@@ -267,6 +337,70 @@ const Mutation = new GraphQLObjectType({
         });
         console.log(authors[authors.length - 1]);
         return authors[authors.length - 1];
+      }
+    },
+    addBooks: {
+      type: BookType,
+      args: {
+        author_id: { type: GraphQLID },
+        title: { type: GraphQLString },
+        subtitle: { type: GraphQLString },
+        blanket: { type: GraphQLString },
+        lang: { type: GraphQLString },
+        format_book: { type: GraphQLString },
+        genre: { type: GraphQLString },
+        stock: { type: GraphQLInt },
+        ISBN: { type: GraphQLString }
+      },
+      resolve(parent, args) {
+        if (args.author_id && args.title && args.ISBN) {
+          if (_.find(authors, { id: args.author_id })) {
+            console.log(Object.entries(args))
+            books.push({
+              id: books.length,
+              title: args.title||null,
+              subtitle: args.subtitle,
+              blanket: args.blanket,
+              lang: args.lang,
+              format_book: args.format_book,
+              genre: args.genre,
+              stock: args.stock,
+              ISBN: args.ISBN,
+              author_id : args.author_id
+            });
+            return books[books.length - 1];
+          } else {
+            throw new Error("Unknow author");
+          }
+        } else {
+          throw new Error("ISBN, Title or author can not be unset");
+        }
+      }
+    },
+    addUser: {
+      type: UserType,
+      args: {
+        email: { type: GraphQLString },
+        name: { type: GraphQLString },
+        password: { type: GraphQLString }
+      },
+      resolve(parent, args) {
+        if (args.email && args.password) {
+          if (!_.find(users, { email: args.email })) {
+            users.push({
+              id: users.length,
+              email:args.email,
+              name:args.name || null,
+              password:args.password,
+              role : "user"
+            });
+            return users[users.length - 1];
+          } else {          
+            throw new Error("email already use");
+          }
+        } else {
+          throw new Error("password or email can not be unset");
+        }
       }
     }
   }
