@@ -1,3 +1,4 @@
+const jsonWebToken = require("jsonwebtoken");
 const graphql = require("graphql");
 const {
   GraphQLObjectType,
@@ -8,7 +9,7 @@ const {
   GraphQLList
 } = graphql; // extract the function GraphQLObjectType from the packqge graphql
 const _ = require("lodash");
-const jsonWebToken = require("jsonwebtoken");
+const authVerif = require("./../js/authverif"); // when this is called, when the token or the role is incorect, it stop everything and trhow an error :D
 
 //dummy data
 let books = [
@@ -144,7 +145,7 @@ let users = [
     email: "keke@baraki.con",
     name: "kevin",
     password: "5678",
-    role: "user",
+    role: "banned",
     id: "3"
   }
 ];
@@ -262,6 +263,16 @@ const CommentType = new GraphQLObjectType({
     eval: { type: GraphQLString }
   })
 });
+const LoginType = new GraphQLObjectType({
+  name: "Login",
+  fields: () => ({
+    email: { type: GraphQLID },
+    name: { type: GraphQLString },
+    role: { type: GraphQLString },
+    id: { type: GraphQLID },
+    token : { type: GraphQLString }
+  })
+});
 
 
 const RootQuery = new GraphQLObjectType({
@@ -270,68 +281,76 @@ const RootQuery = new GraphQLObjectType({
     book: {
       type: BookType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         // code to get data from db
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return _.find(books, { id: args.id });
       }
     },
     books: {
       type: new GraphQLList(BookType),
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return books;
       }
     },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return _.find(authors, { id: args.id });
       }
     },
     authors: {
       type: new GraphQLList(AuthorType),
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return authors;
       }
     },
     user: {
       type: UserType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return _.find(users, { id: args.id });
       }
     },
     users: {
       type: new GraphQLList(UserType),
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return users;
       }
     },
     comment: {
       type: CommentType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return _.find(comments, { id: args.id });
       }
     },
     comments: {
       type: new GraphQLList(CommentType),
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return comments;
       }
     },
     login: {
-      type: UserType,
+      type: LoginType,
       args: { email: { type: GraphQLString }, password: { type: GraphQLString } },
       resolve(parent, args, ctx) {
         const user = _.find(users, { email: args.email, password: args.password } );
         if(user){
-          const token = jsonWebToken.sign({id: user.id, role: user.role},"maPassPhraseEnDurSuperSecure");
-          console.log(token);
+          user.token = jsonWebToken.sign({id: user.id, role: user.role},'maPassPhraseEnDurSuperSecure');
           return user;
         }
-        
-
+        else{
+          throw new error("Login Failed");
+        }
       }
     },
   }
