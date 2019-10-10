@@ -364,11 +364,11 @@ const Mutation = new GraphQLObjectType({
       args: {
         name: { type: GraphQLString }
       },
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["admin"]); // securisation 
         authors.push({
           id: authors.length + 1,
-          name: args.name,
-          age: args.age
+          name: args.name
         });
         console.log(authors[authors.length - 1]);
         return authors[authors.length - 1];
@@ -387,7 +387,8 @@ const Mutation = new GraphQLObjectType({
         stock: { type: GraphQLInt },
         ISBN: { type: GraphQLString }
       },
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["admin"]); // securisation 
         if (args.author_id && args.title && args.ISBN) {
           if (_.find(authors, { id: args.author_id })) {
             console.log(Object.entries(args))
@@ -412,7 +413,7 @@ const Mutation = new GraphQLObjectType({
         }
       }
     },
-    addUser: {
+    signUp: {
       type: UserType,
       args: {
         email: { type: GraphQLString },
@@ -437,6 +438,18 @@ const Mutation = new GraphQLObjectType({
           throw new Error("password or email can not be unset");
         }
       }
+    },
+    editUser: {
+
+    },
+    bannishAUser:{
+
+    },
+    borrowABook:{
+
+    },
+    returnABook:{
+
     }
   }
 });
