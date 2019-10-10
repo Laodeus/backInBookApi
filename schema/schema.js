@@ -8,6 +8,7 @@ const {
   GraphQLList
 } = graphql; // extract the function GraphQLObjectType from the packqge graphql
 const _ = require("lodash");
+const jsonWebToken = require("jsonwebtoken");
 
 //dummy data
 let books = [
@@ -262,6 +263,7 @@ const CommentType = new GraphQLObjectType({
   })
 });
 
+
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
@@ -316,6 +318,20 @@ const RootQuery = new GraphQLObjectType({
       type: new GraphQLList(CommentType),
       resolve(parent, args) {
         return comments;
+      }
+    },
+    login: {
+      type: UserType,
+      args: { email: { type: GraphQLString }, password: { type: GraphQLString } },
+      resolve(parent, args, ctx) {
+        const user = _.find(users, { email: args.email, password: args.password } );
+        if(user){
+          const token = jsonWebToken.sign({id: user.id, role: user.role},"maPassPhraseEnDurSuperSecure");
+          console.log(token);
+          return user;
+        }
+        
+
       }
     },
   }
