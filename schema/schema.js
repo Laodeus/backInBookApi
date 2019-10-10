@@ -274,6 +274,13 @@ const LoginType = new GraphQLObjectType({
   })
 });
 
+/*
+  a faire
+  une query dans user qui recupere tous les bouquins emprunter par l'utilisateur.
+  l'isbn n'est pas unique c'est l'id qui l'est, un bouquin, un id.
+  faire un systeme d'historique d'emprunt
+
+*/
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
