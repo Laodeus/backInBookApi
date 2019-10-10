@@ -6,10 +6,10 @@ const Authverif = async (ctx, tocken, role) => {
       ctx.request.header.authorization,
       tocken
     );
-    if (role.includes(decoded.role)) {
-      return decoded.id;
+    if (role.includes(decoded.role) || role == "all") {
+      return decoded;
     } else {
-      throw new Error("unauthorised for " + role + " user");
+      throw new Error("unauthorised for " + decoded.role + " user");
     }
   } else {
     throw new Error("unauthorised, please login or sign up");

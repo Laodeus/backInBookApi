@@ -289,22 +289,22 @@ const RootQuery = new GraphQLObjectType({
     },
     books: {
       type: new GraphQLList(BookType),
-      async resolve(parent, args) {
-        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
+      async resolve(parent, args, ctx) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',"all"); // securisation 
         return books;
       }
     },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
-      async resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return _.find(authors, { id: args.id });
       }
     },
     authors: {
       type: new GraphQLList(AuthorType),
-      async resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return authors;
       }
@@ -312,14 +312,14 @@ const RootQuery = new GraphQLObjectType({
     user: {
       type: UserType,
       args: { id: { type: GraphQLID } },
-      async resolve(parent, args) {
-        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
+      async resolve(parent, args, ctx) {
+        await authVerif(ctx,'maPassPhraseEnDurSuperSecure',"all"); // securisation 
         return _.find(users, { id: args.id });
       }
     },
     users: {
       type: new GraphQLList(UserType),
-      async resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return users;
       }
@@ -327,14 +327,14 @@ const RootQuery = new GraphQLObjectType({
     comment: {
       type: CommentType,
       args: { id: { type: GraphQLID } },
-      async resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return _.find(comments, { id: args.id });
       }
     },
     comments: {
       type: new GraphQLList(CommentType),
-      async resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["user", "admin"]); // securisation 
         return comments;
       }
@@ -349,7 +349,7 @@ const RootQuery = new GraphQLObjectType({
           return user;
         }
         else{
-          throw new error("Login Failed");
+          throw new Error("Login Failed");
         }
       }
     },
@@ -364,7 +364,7 @@ const Mutation = new GraphQLObjectType({
       args: {
         name: { type: GraphQLString }
       },
-      async resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["admin"]); // securisation 
         authors.push({
           id: authors.length + 1,
@@ -387,7 +387,7 @@ const Mutation = new GraphQLObjectType({
         stock: { type: GraphQLInt },
         ISBN: { type: GraphQLString }
       },
-      async resolve(parent, args) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx,'maPassPhraseEnDurSuperSecure',["admin"]); // securisation 
         if (args.author_id && args.title && args.ISBN) {
           if (_.find(authors, { id: args.author_id })) {
@@ -413,6 +413,38 @@ const Mutation = new GraphQLObjectType({
         }
       }
     },
+    editBook: {
+      type: BookType,
+      args: {
+        id: { type: GraphQLID },
+        author_id: { type: GraphQLID },
+        title: { type: GraphQLString },
+        subtitle: { type: GraphQLString },
+        blanket: { type: GraphQLString },
+        lang: { type: GraphQLString },
+        format_book: { type: GraphQLString },
+        genre: { type: GraphQLString },
+        stock: { type: GraphQLInt },
+        ISBN: { type: GraphQLString }
+      },
+      async resolve(parent, args, ctx) {
+        const authUser =await  authVerif(ctx,'maPassPhraseEnDurSuperSecure',["admin"]); // securisation 
+        let modifiedBook = Object.assign(
+          [_.findIndex(books, { id: args.id })], 
+          args.name&&{name : args.name},
+          args.title&&{ title: args.title },
+          args.subtitle&&{ subtitle: args.subtitle },
+          args.blanket&&{ blanket: args.blanket },
+          args.lang&&{ lang: args.lang },
+          args.format_book&&{ format_book: args.format_book },
+          args.genre&&{ genre: args.genre },
+          args.stock&&{ stock: args.stock },
+          args.ISBN&&{ ISBN: args.ISBN }
+          ); 
+        books[_.findIndex(books, { id: args.id })] = modifiedBook;
+        return _.find(books, { id: args.id });
+      }
+    },
     signUp: {
       type: UserType,
       args: {
@@ -420,7 +452,7 @@ const Mutation = new GraphQLObjectType({
         name: { type: GraphQLString },
         password: { type: GraphQLString }
       },
-      resolve(parent, args) {
+      resolve(parent, args, ctx) {
         if (args.email && args.password) {
           if (!_.find(users, { email: args.email })) {
             users.push({
@@ -440,17 +472,45 @@ const Mutation = new GraphQLObjectType({
       }
     },
     editUser: {
-
+      type: UserType,
+      args: {
+        id: { type: GraphQLID },
+        name: { type: GraphQLID },
+        email: { type: GraphQLID },
+        password: { type: GraphQLID },
+      },
+      async resolve(parent, args, ctx) {
+        const authUser =await  authVerif(ctx,'maPassPhraseEnDurSuperSecure',["admin","user"]); // securisation 
+        if(authUser.id == args.id || authUser.role == "admin"){ // si c'est un admin ou lui meme
+          let modifiedUser = Object.assign(users[_.findIndex(users, { id: args.id })], args.name&&{name : args.name}, args.email&&{email: args.email}, args.password&&{password:args.password}); 
+          users[_.findIndex(users, { id: args.id })] = modifiedUser;
+          return _.find(users, { id: args.id });
+        }
+        else{
+          throw new Error("unauthorised for non-admin or not your own account");
+        }
+      }
     },
-    bannishAUser:{
-
+    editUserRole: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLID },
+        role : { type: GraphQLString }
+      },
+      async resolve(parent, args, ctx) {
+        authUser =await  authVerif(ctx,'maPassPhraseEnDurSuperSecure',["admin"]); // securisation 
+          let modifiedUser = Object.assign(users[_.findIndex(users, { id: args.id })], args.role&&{role:args.role}); 
+          users[_.findIndex(users, { id: args.id })] = modifiedUser;
+          return _.find(users, { id: args.id });
+      }
     },
-    borrowABook:{
+    // borrowABook:{
 
-    },
-    returnABook:{
+    // },
+    // returnABook:{
 
-    }
+    // }
+    // creer les routes pour les commentaire et les roote pour que l'utilisateur voit les livres qu'il a emprunter
   }
 });
 
