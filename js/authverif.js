@@ -9,7 +9,7 @@ const Authverif = async (ctx, tocken, role) => {
     if (role.includes(decoded.role) || role == "all") {
       return decoded;
     } else {
-      throw new Error("unauthorised for " + decoded.role + " user");
+      throw new Error("unauthorised for " + decoded.role + " role");
     }
   } else {
     throw new Error("unauthorised, please login or sign up");
