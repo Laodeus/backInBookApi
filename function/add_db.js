@@ -1,1 +1,2 @@
-knex('table').insert({a: 'b'}).returning('*').toString();
+knex('users')
+    .insert({ email: 'hi@example.com' })

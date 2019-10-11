@@ -30,19 +30,10 @@ var knex = require('knex')({
     password : password,
     database : database
   },
-  migrations: {
-    tableName: 'migrations'
-  }
 });
-knex.select('title').from('books');
-
-let titre = knex.select('title').from('books');
-console.log(titre);
 
 
-
-
-//====================================================database
+ //====================================================database
 
 
 
