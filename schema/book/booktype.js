@@ -30,9 +30,15 @@ const BookType = new GraphQLObjectType({
        comment: {
          type: GraphQLList(CommentType),
          resolve(parent, args) {
+           //console.log(_.filter(comments, { book_id: parent.id }));
+           console.log(comments);
+
            return _.filter(comments, { book_id: parent.id });
          }
-       }
+       },
+       borrower_id : { type: GraphQLID },
+       borrower_date : { type: GraphQLString },
+       state : { type: GraphQLString },
     })
   });
 
@@ -41,6 +47,10 @@ const BookType = new GraphQLObjectType({
   // nedded type inclusion for recursivity
 const AuthorType = require("./../author/authortype");
 const CommentType = require("./../comment/commentType");
-console.log(AuthorType);
+const UserType = require("./../user/usertype");
+
 // import nedded data
-const {authors,comments} = require("./../../js/dummydata/dummy");
+const books = require("./../../js/dummydata/books");
+const users = require("./../../js/dummydata/users");
+const authors = require("./../../js/dummydata/authors");
+const comments = require("./../../js/dummydata/comments");

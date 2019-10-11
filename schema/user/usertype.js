@@ -31,4 +31,7 @@ const UserType = new GraphQLObjectType({
 const CommentType = require("./../comment/commentType");
 
 // import nedded data
-const {comments} = require("./../../js/dummydata/dummy");
+const books = require("./../../js/dummydata/books");
+const users = require("./../../js/dummydata/users");
+const authors = require("./../../js/dummydata/authors");
+const comments = require("./../../js/dummydata/comments");

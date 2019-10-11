@@ -20,7 +20,11 @@ const LoginType = require("./login/logintype");
 
 
 // all Data
-const {books,authors,users,comments} = require("./../js/dummydata/dummy");
+// import nedded data
+let books = require("./../js/dummydata/books");
+let users = require("./../js/dummydata/users");
+let authors = require("./../js/dummydata/authors");
+let comments = require("./../js/dummydata/comments");
 /*
   a faire
   une query dans user qui recupere tous les bouquins emprunter par l'utilisateur.
