@@ -8,12 +8,6 @@ const {
 } = graphql; // extract the function GraphQLObjectType from the packqge graphql
 const _ = require("lodash");
 
-// nedded type inclusion for recursivity
-const CommentType = require("./../comment/commentType");
-
-// import nedded data
-const {books,authors,users,comments} = require("./../../js/dummydata/dummy");
-
 const UserType = new GraphQLObjectType({
     name: "User",
     fields: () => ({
@@ -32,3 +26,9 @@ const UserType = new GraphQLObjectType({
   });
 
   module.exports = UserType;
+
+  // nedded type inclusion for recursivity
+const CommentType = require("./../comment/commentType");
+
+// import nedded data
+const {comments} = require("./../../js/dummydata/dummy");

@@ -9,13 +9,6 @@ const {
 } = graphql; // extract the function GraphQLObjectType from the packqge graphql
 const _ = require("lodash");
 
-// nedded type inclusion for recursivity
-const AuthorType = require("./../author/authortype");
-const CommentType = require("./../comment/commentType");
-console.log(AuthorType);
-// import nedded data
-const {books,authors,users,comments} = require("./../../js/dummydata/dummy");
-
 const BookType = new GraphQLObjectType({
     name: "Book",
     fields: () => ({
@@ -34,13 +27,20 @@ const BookType = new GraphQLObjectType({
           return _.find(authors, { id: parent.author_id });
         }
       },
-    //   comment: {
-    //     type: GraphQLList(CommentType),
-    //     resolve(parent, args) {
-    //       return _.filter(comments, { book_id: parent.id });
-    //     }
-    //   }
+       comment: {
+         type: GraphQLList(CommentType),
+         resolve(parent, args) {
+           return _.filter(comments, { book_id: parent.id });
+         }
+       }
     })
   });
 
   module.exports = BookType;
+
+  // nedded type inclusion for recursivity
+const AuthorType = require("./../author/authortype");
+const CommentType = require("./../comment/commentType");
+console.log(AuthorType);
+// import nedded data
+const {authors,comments} = require("./../../js/dummydata/dummy");
