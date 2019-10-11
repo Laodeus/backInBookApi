@@ -34,6 +34,7 @@ var knex = require('knex')({
     tableName: 'migrations'
   }
 });
+knex.select('title').from('books');
 
 let titre = knex.select('title').from('books');
 console.log(titre);

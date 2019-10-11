@@ -1,0 +1,1 @@
+knex('table').insert({a: 'b'}).returning('*').toString();
