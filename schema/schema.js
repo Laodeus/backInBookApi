@@ -17,7 +17,7 @@ const passphrase = process.env.passphrase || "maPassPhraseEnDurSuperSecure";
 // all type
 const BookType = require("./book/booktype");
 const AuthorType = require("./author/authortype");
-const UserType = require("./comment/commentType");
+const UserType = require("./user/usertype");
 const CommentType = require("./comment/commentType");
 const LoginType = require("./login/logintype");
 
@@ -29,8 +29,6 @@ let authors = require("./../js/dummydata/authors");
 let comments = require("./../js/dummydata/comments");
 /*
   a faire
-  une query dans user qui recupere tous les bouquins emprunter par l'utilisateur.
-  une query de touyt les booquin emprunter
   faire un systeme d'historique d'emprunt
 
 
@@ -313,29 +311,39 @@ const Mutation = new GraphQLObjectType({
 
         // here comes the other error function.
         // see if the user have more than 5 books and if one of these books have a borrow date  that of more than a month
-        const alreadyBorrowed =  _.filter(books, {borrower_id:args.userId}); // array of book already borrowed
-        
-        const count =alreadyBorrowed.length; // number of book already borrowed
-        if(count >= 5){
+        const alreadyBorrowed = _.filter(books, { borrower_id: args.userId }); // array of book already borrowed
+
+        const count = alreadyBorrowed.length; // number of book already borrowed
+        if (count >= 5) {
           throw new Error("You already have 5 books.");
-        }  
-        const allOutdated = _.filter(alreadyBorrowed, (element)=>{ // this will filter the already borrowed books and only return the books that outdated
-          const ElementBorrowDate =  DateTime.fromISO(element.borrower_date); // get the diff from borrowdate and now
-          if(ElementBorrowDate.diffNow(['days', 'hours']).toObject().days <= -30){ // luxon return a negative date difference 
-            element.state=`id: ${element.id},${element.title}, borrowed ${element.borrower_date}. ${ElementBorrowDate.diffNow(['days', 'hours']).toObject().days} days of location`;
+        }
+        const allOutdated = _.filter(alreadyBorrowed, element => {
+          // this will filter the already borrowed books and only return the books that outdated
+          const ElementBorrowDate = DateTime.fromISO(element.borrower_date); // get the diff from borrowdate and now
+          if (
+            ElementBorrowDate.diffNow(["days", "hours"]).toObject().days <= -30
+          ) {
+            // luxon return a negative date difference
+            element.state = `id: ${element.id},${element.title}, borrowed ${
+              element.borrower_date
+            }. ${
+              ElementBorrowDate.diffNow(["days", "hours"]).toObject().days
+            } days of location`;
             return element;
-          }   
-        })
-        if (allOutdated.length > 0){ // if there is some oudated
-          let err = "" ;
-          allOutdated.forEach((el)=>{
-            err += el.state+`
+          }
+        });
+        if (allOutdated.length > 0) {
+          // if there is some oudated
+          let err = "";
+          allOutdated.forEach(el => {
+            err +=
+              el.state +
+              `
             `;
           });
-          throw new Error (err);
+          throw new Error(err);
         }
-        
-        
+
         let modifiedBook = Object.assign(
           _.find(books, { id: args.bookId }),
           args.bookId && {
@@ -350,7 +358,9 @@ const Mutation = new GraphQLObjectType({
     returnABook: {
       type: BookType,
       args: {
-        bookId: { type: GraphQLID }
+        bookId: { type: GraphQLID },
+        userId: { type: GraphQLID },
+        isbn: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
         authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [

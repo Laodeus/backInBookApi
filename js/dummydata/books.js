@@ -134,6 +134,20 @@ let books = [
     borrower_date: "2019-08-12",
     state: ""
   },
+  {
+    id: "10",
+    author_id: "2",
+    title: "tatataratata ranger du risque",
+    subtitle: "",
+    blanket: "",
+    lang: "",
+    format_book: "",
+    genre: "shit",
+    ISBN: "",
+    borrower_id: "1",
+    borrower_date: "2019-9-22",
+    state: ""
+  },
 ];
 
 module.exports = books;
