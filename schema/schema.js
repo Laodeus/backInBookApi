@@ -298,28 +298,24 @@ const Mutation = new GraphQLObjectType({
         authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [
           "admin"
         ]); // securisation
-        if (!args.bookId && !args.userId) {
-          throw new Error("bookid and userId need to be set.");
-        };
-        // if(
-        //   !_.includes(users, { id: args.userId }) 
-        //   || !_.includes(books, { id: args.bookId })
-        //   )
-        // {
-        //   throw new Error("user or book not found.");
-        // };
-        console.log(_.includes(users, { id: args.userId }))
-        console.log(_.includes(books, { id: args.bookId }))
+        if(!args.bookId){throw new Error("bookId need to be set.")}; // not set throw error
+        if(!args.userId){throw new Error("userId need to be set.")};
+      
+        if(!_.some(users, { id: args.userId })){throw new Error("User Not found.")} // not finding throw error
+        if(!_.some(books, { id: args.bookId })){throw new Error("book Not found.")}
 
-        // let modifiedBook = Object.assign(
-        //   _.find(books, { id: args.bookId }),
-        //   args.bookId && {
-        //     borrower_id: args.bookId,
-        //     borrower_date: DateTime.fromObject(Date.now()).toISODate()
-        //   }
-        // );
-        // books[_.findIndex(books, { id: args.bookId })] = modifiedBook;
-        // return books[_.findIndex(books, { id: args.bookId })];
+        // here comes the other error function. 
+          // see if the user have more than 5 books and if one of these books have a borrow date  that of more than a month
+
+        let modifiedBook = Object.assign(
+          _.find(books, { id: args.bookId }),
+          args.bookId && {
+            borrower_id: args.bookId,
+            borrower_date: DateTime.fromObject(Date.now()).toISODate()
+          }
+        );
+        books[_.findIndex(books, { id: args.bookId })] = modifiedBook;
+        return books[_.findIndex(books, { id: args.bookId })];
       }
     },
     returnABook: {
