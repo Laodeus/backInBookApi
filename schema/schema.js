@@ -135,8 +135,10 @@ const Mutation = new GraphQLObjectType({
         await authVerif(ctx, passphrase, ["admin"]); // securisation
         if (args.author_id && args.title && args.ISBN) {
           if (_.find(authors, { id: args.author_id })) {
+            const lastId = books[books.length-1]?parseInt(books[books.length-1].id) : 0;
+            console.log(lastId);
             books.push({
-              id: books.length,
+              id: (lastId+1).toString(),
               title: args.title || null,
               subtitle: args.subtitle,
               blanket: args.blanket,
@@ -174,6 +176,9 @@ const Mutation = new GraphQLObjectType({
         const authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
+        if(!_.some(books, { id: args.id })){
+          throw new Error("Unknow book");
+        }
         let modifiedBook = Object.assign(
           [_.findIndex(books, { id: args.id })],
           args.name && { name: args.name },
@@ -196,98 +201,14 @@ const Mutation = new GraphQLObjectType({
         id: { type: GraphQLID },
       },
       async resolve(parent, args, ctx) {
-        const authUser = await authVerif(ctx, passphrase, [
+        await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
+        if(!_.some(books, { id: args.id })){
+          throw new Error("Unknow book");
+        }
         books.splice(_.findIndex(books, { id: args.id }), 1);
         return books;
-      }
-    },
-    addAuthor: {
-      type: AuthorType,
-      args: {
-        name: { type: GraphQLString }
-      },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["admin"]); // securisation
-        authors.push({
-          id: authors.length + 1,
-          name: args.name
-        });
-        console.log(authors[authors.length - 1]);
-        return authors[authors.length - 1];
-      }
-    },
-    signUp: {
-      type: UserType,
-      args: {
-        email: { type: GraphQLString },
-        name: { type: GraphQLString },
-        password: { type: GraphQLString }
-      },
-      resolve(parent, args, ctx) {
-        if (args.email && args.password) {
-          if (!_.find(users, { email: args.email })) {
-            users.push({
-              id: users.length,
-              email: args.email,
-              name: args.name || null,
-              password: args.password,
-              role: "user"
-            });
-            return users[users.length - 1];
-          } else {
-            throw new Error("email already use");
-          }
-        } else {
-          throw new Error("password or email can not be unset");
-        }
-      }
-    },
-    editUser: {
-      type: UserType,
-      args: {
-        id: { type: GraphQLID },
-        name: { type: GraphQLID },
-        email: { type: GraphQLID },
-        password: { type: GraphQLID }
-      },
-      async resolve(parent, args, ctx) {
-        const authUser = await authVerif(ctx, passphrase, [
-          "admin",
-          "user"
-        ]); // securisation
-        if (authUser.id == args.id || authUser.role == "admin") {
-          // si c'est un admin ou lui meme
-          let modifiedUser = Object.assign(
-            users[_.findIndex(users, { id: args.id })],
-            args.name && { name: args.name },
-            args.email && { email: args.email },
-            args.password && { password: args.password }
-          );
-          users[_.findIndex(users, { id: args.id })] = modifiedUser;
-          return _.find(users, { id: args.id });
-        } else {
-          throw new Error("unauthorised for non-admin or not your own account");
-        }
-      }
-    },
-    editUserRole: {
-      type: UserType,
-      args: {
-        id: { type: GraphQLID },
-        role: { type: GraphQLString }
-      },
-      async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, [
-          "admin"
-        ]); // securisation
-        let modifiedUser = Object.assign(
-          users[_.findIndex(users, { id: args.id })],
-          args.role && { role: args.role }
-        );
-        users[_.findIndex(users, { id: args.id })] = modifiedUser;
-        return _.find(users, { id: args.id });
       }
     },
     borrowABook: {
@@ -398,7 +319,94 @@ const Mutation = new GraphQLObjectType({
 
         return _.filter(books, {borrower_id: args.userId})
       }
-    }
+    },
+    addAuthor: {
+      type: AuthorType,
+      args: {
+        name: { type: GraphQLString }
+      },
+      async resolve(parent, args, ctx) {
+        await authVerif(ctx, passphrase, ["admin"]); // securisation
+        authors.push({
+          id: authors.length + 1,
+          name: args.name
+        });
+        console.log(authors[authors.length - 1]);
+        return authors[authors.length - 1];
+      }
+    },
+    signUp: {
+      type: UserType,
+      args: {
+        email: { type: GraphQLString },
+        name: { type: GraphQLString },
+        password: { type: GraphQLString }
+      },
+      resolve(parent, args, ctx) {
+        if (args.email && args.password) {
+          if (!_.find(users, { email: args.email })) {
+            users.push({
+              id: users.length,
+              email: args.email,
+              name: args.name || null,
+              password: args.password,
+              role: "user"
+            });
+            return users[users.length - 1];
+          } else {
+            throw new Error("email already use");
+          }
+        } else {
+          throw new Error("password or email can not be unset");
+        }
+      }
+    },
+    editUser: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLID },
+        name: { type: GraphQLID },
+        email: { type: GraphQLID },
+        password: { type: GraphQLID }
+      },
+      async resolve(parent, args, ctx) {
+        const authUser = await authVerif(ctx, passphrase, [
+          "admin",
+          "user"
+        ]); // securisation
+        if (authUser.id == args.id || authUser.role == "admin") {
+          // si c'est un admin ou lui meme
+          let modifiedUser = Object.assign(
+            users[_.findIndex(users, { id: args.id })],
+            args.name && { name: args.name },
+            args.email && { email: args.email },
+            args.password && { password: args.password }
+          );
+          users[_.findIndex(users, { id: args.id })] = modifiedUser;
+          return _.find(users, { id: args.id });
+        } else {
+          throw new Error("unauthorised for non-admin or not your own account");
+        }
+      }
+    },
+    editUserRole: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLID },
+        role: { type: GraphQLString }
+      },
+      async resolve(parent, args, ctx) {
+        authUser = await authVerif(ctx, passphrase, [
+          "admin"
+        ]); // securisation
+        let modifiedUser = Object.assign(
+          users[_.findIndex(users, { id: args.id })],
+          args.role && { role: args.role }
+        );
+        users[_.findIndex(users, { id: args.id })] = modifiedUser;
+        return _.find(users, { id: args.id });
+      }
+    },
     // creer les routes pour les commentaire et les roote pour que l'utilisateur voit les livres qu'il a emprunter
   }
 });
