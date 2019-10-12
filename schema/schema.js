@@ -1,14 +1,7 @@
 const jsonWebToken = require("jsonwebtoken");
 const { DateTime } = require("luxon");
 const graphql = require("graphql");
-const {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLSchema,
-  GraphQLID,
-  GraphQLInt,
-  GraphQLList
-} = graphql; // extract the function GraphQLObjectType from the packqge graphql
+const {GraphQLObjectType,GraphQLString,GraphQLSchema,GraphQLID,GraphQLInt,GraphQLList} = graphql; // extract the function GraphQLObjectType from the packqge graphql
 const _ = require("lodash");
 const authVerif = require("./../js/authverif"); // when this is called, when the token or the role is incorect, it stop everything and trhow an error :D
 
@@ -30,8 +23,7 @@ let comments = require("./../js/dummydata/comments");
 /*
   a faire
   faire un systeme d'historique d'emprunt
-
-
+  le systeme de commentaire
 */
 
 const RootQuery = new GraphQLObjectType({
@@ -49,7 +41,7 @@ const RootQuery = new GraphQLObjectType({
     books: {
       type: new GraphQLList(BookType),
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", "all"); // securisation
+        await authVerif(ctx, passphrase, "all"); // securisation
         return books;
       }
     },
@@ -57,14 +49,14 @@ const RootQuery = new GraphQLObjectType({
       type: AuthorType,
       args: { id: { type: GraphQLID } },
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["user", "admin"]); // securisation
+        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         return _.find(authors, { id: args.id });
       }
     },
     authors: {
       type: new GraphQLList(AuthorType),
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["user", "admin"]); // securisation
+        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         return authors;
       }
     },
@@ -72,14 +64,14 @@ const RootQuery = new GraphQLObjectType({
       type: UserType,
       args: { id: { type: GraphQLID } },
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", "all"); // securisation
+        await authVerif(ctx, passphrase, "all"); // securisation
         return _.find(users, { id: args.id });
       }
     },
     users: {
       type: new GraphQLList(UserType),
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["user", "admin"]); // securisation
+        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         return users;
       }
     },
@@ -87,14 +79,14 @@ const RootQuery = new GraphQLObjectType({
       type: CommentType,
       args: { id: { type: GraphQLID } },
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["user", "admin"]); // securisation
+        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         return _.find(comments, { id: args.id });
       }
     },
     comments: {
       type: new GraphQLList(CommentType),
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["user", "admin"]); // securisation
+        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         return comments;
       }
     },
@@ -112,7 +104,7 @@ const RootQuery = new GraphQLObjectType({
         if (user) {
           user.token = jsonWebToken.sign(
             { id: user.id, role: user.role },
-            "maPassPhraseEnDurSuperSecure"
+            passphrase
           );
           return user;
         } else {
@@ -126,21 +118,6 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
   fields: {
-    addAuthor: {
-      type: AuthorType,
-      args: {
-        name: { type: GraphQLString }
-      },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["admin"]); // securisation
-        authors.push({
-          id: authors.length + 1,
-          name: args.name
-        });
-        console.log(authors[authors.length - 1]);
-        return authors[authors.length - 1];
-      }
-    },
     addBooks: {
       type: BookType,
       args: {
@@ -155,7 +132,7 @@ const Mutation = new GraphQLObjectType({
         ISBN: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["admin"]); // securisation
+        await authVerif(ctx, passphrase, ["admin"]); // securisation
         if (args.author_id && args.title && args.ISBN) {
           if (_.find(authors, { id: args.author_id })) {
             books.push({
@@ -194,7 +171,7 @@ const Mutation = new GraphQLObjectType({
         ISBN: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
-        const authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [
+        const authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
         let modifiedBook = Object.assign(
@@ -211,6 +188,34 @@ const Mutation = new GraphQLObjectType({
         );
         books[_.findIndex(books, { id: args.id })] = modifiedBook;
         return _.find(books, { id: args.id });
+      }
+    },
+    deleteBook: {
+      type: GraphQLList(BookType),
+      args: {
+        id: { type: GraphQLID },
+      },
+      async resolve(parent, args, ctx) {
+        const authUser = await authVerif(ctx, passphrase, [
+          "admin"
+        ]); // securisation
+        books.splice(_.findIndex(books, { id: args.id }), 1);
+        return books;
+      }
+    },
+    addAuthor: {
+      type: AuthorType,
+      args: {
+        name: { type: GraphQLString }
+      },
+      async resolve(parent, args, ctx) {
+        await authVerif(ctx, passphrase, ["admin"]); // securisation
+        authors.push({
+          id: authors.length + 1,
+          name: args.name
+        });
+        console.log(authors[authors.length - 1]);
+        return authors[authors.length - 1];
       }
     },
     signUp: {
@@ -248,7 +253,7 @@ const Mutation = new GraphQLObjectType({
         password: { type: GraphQLID }
       },
       async resolve(parent, args, ctx) {
-        const authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [
+        const authUser = await authVerif(ctx, passphrase, [
           "admin",
           "user"
         ]); // securisation
@@ -274,7 +279,7 @@ const Mutation = new GraphQLObjectType({
         role: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [
+        authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
         let modifiedUser = Object.assign(
@@ -286,13 +291,13 @@ const Mutation = new GraphQLObjectType({
       }
     },
     borrowABook: {
-      type: BookType,
+      type: GraphQLList(BookType),
       args: {
         bookId: { type: GraphQLID },
         userId: { type: GraphQLID }
       },
       async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [
+        authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
         if (!args.bookId) {
@@ -308,7 +313,6 @@ const Mutation = new GraphQLObjectType({
         if (!_.some(books, { id: args.bookId })) {
           throw new Error("book Not found.");
         }
-
         // here comes the other error function.
         // see if the user have more than 5 books and if one of these books have a borrow date  that of more than a month
         const alreadyBorrowed = _.filter(books, { borrower_id: args.userId }); // array of book already borrowed
@@ -343,6 +347,11 @@ const Mutation = new GraphQLObjectType({
           });
           throw new Error(err);
         }
+        // if the book is already borrowed
+        if(!_.some(books, { borrower_id: "",id:args.bookId })){
+          throw new Error("Book already borrowed");
+        }
+
 
         let modifiedBook = Object.assign(
           _.find(books, { id: args.bookId }),
@@ -352,38 +361,44 @@ const Mutation = new GraphQLObjectType({
           }
         );
         books[_.findIndex(books, { id: args.bookId })] = modifiedBook;
-        return books[_.findIndex(books, { id: args.bookId })];
+        return _.filter(books, { borrower_id: args.userId });
       }
     },
     returnABook: {
-      type: BookType,
+      type: GraphQLList(BookType),
       args: {
         bookId: { type: GraphQLID },
         userId: { type: GraphQLID },
-        isbn: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [
+        authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
-        if (args.bookId) {
-          let modifiedBook = Object.assign(
-            _.find(books, { id: args.bookId }),
-            args.bookId && {
-              borrower_id: args.bookId,
-              borrower_date: DateTime.fromObject(Date.now()).toISODate()
-            }
-          );
-          books[_.findIndex(books, { id: args.bookId })] = modifiedBook;
-          return books[_.findIndex(books, { id: args.bookId })];
-        } else {
-          throw new Error("bookid and userId need to be set");
+        if(!args.bookId){throw new Error("bookId not provided");}
+        if(!args.userId){throw new Error("userId not provided");}
+        if (!_.some(users, { id: args.userId })) {
+          throw new Error("User Not found.");
+        } // not finding throw error
+        if (!_.some(books, { id: args.bookId })) {
+          throw new Error("book Not found.");
         }
+        // si le livre est bien a l'user, on le retourne, sinon, on throw une erreur
+        if (!_.some(books, { id: args.bookId, borrower_id:args.userId })) {
+          throw new Error("This book are not assigned to this user");
+        }
+
+        let modifiedBook = Object.assign(
+          _.find(books, { id: args.bookId }),
+          args.bookId && {
+            borrower_id: "",
+            borrower_date: ""
+          }
+        );
+        books[_.findIndex(books, { id: args.bookId })] = modifiedBook;
+
+        return _.filter(books, {borrower_id: args.userId})
       }
     }
-    // returnABook:{
-
-    // }
     // creer les routes pour les commentaire et les roote pour que l'utilisateur voit les livres qu'il a emprunter
   }
 });
