@@ -160,7 +160,6 @@ const Mutation = new GraphQLObjectType({
         await authVerif(ctx, "maPassPhraseEnDurSuperSecure", ["admin"]); // securisation
         if (args.author_id && args.title && args.ISBN) {
           if (_.find(authors, { id: args.author_id })) {
-            console.log(Object.entries(args));
             books.push({
               id: books.length,
               title: args.title || null,
@@ -298,19 +297,49 @@ const Mutation = new GraphQLObjectType({
         authUser = await authVerif(ctx, "maPassPhraseEnDurSuperSecure", [
           "admin"
         ]); // securisation
-        if(!args.bookId){throw new Error("bookId need to be set.")}; // not set throw error
-        if(!args.userId){throw new Error("userId need to be set.")};
-      
-        if(!_.some(users, { id: args.userId })){throw new Error("User Not found.")} // not finding throw error
-        if(!_.some(books, { id: args.bookId })){throw new Error("book Not found.")}
+        if (!args.bookId) {
+          throw new Error("bookId need to be set.");
+        } // not set throw error
+        if (!args.userId) {
+          throw new Error("userId need to be set.");
+        }
 
-        // here comes the other error function. 
-          // see if the user have more than 5 books and if one of these books have a borrow date  that of more than a month
+        if (!_.some(users, { id: args.userId })) {
+          throw new Error("User Not found.");
+        } // not finding throw error
+        if (!_.some(books, { id: args.bookId })) {
+          throw new Error("book Not found.");
+        }
 
+        // here comes the other error function.
+        // see if the user have more than 5 books and if one of these books have a borrow date  that of more than a month
+        const alreadyBorrowed =  _.filter(books, {borrower_id:args.userId}); // array of book already borrowed
+        
+        const count =alreadyBorrowed.length; // number of book already borrowed
+        if(count >= 5){
+          throw new Error("You already have 5 books.");
+        }  
+        const allOutdated = _.filter(alreadyBorrowed, (element)=>{ // this will filter the already borrowed books and only return the books that outdated
+          const ElementBorrowDate =  DateTime.fromISO(element.borrower_date); // get the diff from borrowdate and now
+          if(ElementBorrowDate.diffNow(['days', 'hours']).toObject().days <= -30){ // luxon return a negative date difference 
+            element.state=`id: ${element.id},${element.title}, borrowed ${element.borrower_date}. ${ElementBorrowDate.diffNow(['days', 'hours']).toObject().days} days of location`;
+            return element;
+          }   
+        })
+        if (allOutdated.length > 0){ // if there is some oudated
+          let err = "" ;
+          allOutdated.forEach((el)=>{
+            err += el.state+`
+            `;
+          });
+          throw new Error (err);
+        }
+        
+        
         let modifiedBook = Object.assign(
           _.find(books, { id: args.bookId }),
           args.bookId && {
-            borrower_id: args.bookId,
+            borrower_id: args.userId,
             borrower_date: DateTime.fromObject(Date.now()).toISODate()
           }
         );

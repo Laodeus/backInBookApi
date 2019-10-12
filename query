@@ -1,0 +1,86 @@
+all query in one recursivity
+
+{
+  books{
+    id
+		title
+		subtitle
+		blanket
+		lang
+		format_book
+		genre
+		stock
+		ISBN
+		author{
+      id
+      name
+      books{
+        id
+      }
+    }
+		comment {
+      id
+			book{
+        id
+      }
+			user{
+        id
+        email
+        name
+        role
+        comment{
+          id
+        }
+      }
+			title
+			com
+			eval
+    }
+		borrower_id
+		borrower_date
+		state
+  }
+}
+
+mutation
+--------
+
+mutation{
+    addBooks(
+        author_id // required
+        title // required
+        subtitle
+        blanket // lol
+        lang
+        format_book
+        genre
+        stock
+        ISBN // required
+){
+    id
+	title
+	subtitle
+	blanket
+	lang
+	format_book
+	genre
+	stock
+	ISBN
+    author{
+      id
+      name
+      books{
+        id
+      }
+
+    }
+}
+
+mutation {
+  borrowABook(bookId: 1, userId: 1) {
+    id
+    title
+    borrower_id
+    borrower_date
+  }
+}

@@ -91,7 +91,6 @@ let books = [
     borrower_date: "",
     state: ""
   },
-
   {
     id: "7",
     author_id: "2",
@@ -105,7 +104,36 @@ let books = [
     borrower_id: "",
     borrower_date: "",
     state: ""
-  }
+  },
+  {
+    id: "8",
+    author_id: "2",
+    title: "tatatat",
+    subtitle: "",
+    blanket: "",
+    lang: "",
+    format_book: "",
+    genre: "shit",
+    ISBN: "",
+    borrower_id: "1",
+    borrower_date: "2019-08-12",
+    state: ""
+  },
+  ,
+  {
+    id: "9",
+    author_id: "2",
+    title: "tatataratata",
+    subtitle: "",
+    blanket: "",
+    lang: "",
+    format_book: "",
+    genre: "shit",
+    ISBN: "",
+    borrower_id: "1",
+    borrower_date: "2019-08-12",
+    state: ""
+  },
 ];
 
 module.exports = books;
