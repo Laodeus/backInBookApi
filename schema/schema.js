@@ -42,7 +42,7 @@ const RootQuery = new GraphQLObjectType({
       args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
       type: new GraphQLList(BookType),
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, "all"); // securisation
+        await authVerif(ctx, passphrase, ["user","admin"]); // securisation
         offset = args.offset?parseInt(args.offset):0;
         limit = args.limit?parseInt(args.limit):10;
 
@@ -72,7 +72,7 @@ const RootQuery = new GraphQLObjectType({
       type: UserType,
       args: { id: { type: GraphQLID } },
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, "all"); // securisation
+        await authVerif(ctx, passphrase, ["user","admin"]); // securisation
         return _.find(users, { id: args.id });
       }
     },
@@ -115,6 +115,9 @@ const RootQuery = new GraphQLObjectType({
     },
     login: {
       type: LoginType,
+      description:
+      `All queries except login(queries) and signUp(mutation) are protected. 
+      you must login before anything.`,
       args: {
         email: { type: GraphQLString },
         password: { type: GraphQLString }
@@ -140,6 +143,18 @@ const RootQuery = new GraphQLObjectType({
 
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
+  description :`signUp // free access.
+  addBooks // admin role only
+  editBook // admin role only
+  deleteBook // admin role only
+  borrowABook // admin role only
+  returnABook // admin role only
+  addAuthor // admin role only
+  editUser // admin role or user himself only
+  editUserRole // admin role only
+  addComment // admin and user access. 
+  deleteComment // admin role or user himself only
+  `,
   fields: {
     addBooks: {
       type: BookType,
@@ -476,14 +491,13 @@ const Mutation = new GraphQLObjectType({
         id: { type: GraphQLID },
       },
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, [
-          "admin"
-        ]); // securisation
-        if(!_.some(books, { id: args.id })){
-          throw new Error("Unknow book");
+        if (authUser.id == args.id || authUser.role == "admin") {
+          // si c'est un admin ou lui meme
+          comments.splice(_.findIndex(comments, { id: args.id }), 1);
         }
-        books.splice(_.findIndex(books, { id: args.id }), 1);
-        return books;
+        else {
+          throw new Error("unauthorised for non-admin or not your own account");
+        }
       }
     },
   }
