@@ -423,7 +423,46 @@ const Mutation = new GraphQLObjectType({
         return _.find(users, { id: args.id });
       }
     },
-    // creer les routes pour les commentaire et les roote pour que l'utilisateur voit les livres qu'il a emprunter
+    addComment: {
+      type: CommentType,
+      args: {
+        bookId: { type: GraphQLID },
+        title: { type: GraphQLString },
+        comment: { type: GraphQLString },
+        eval: { type: GraphQLString },
+      },
+      async resolve(parent, args, ctx) {
+        authUser = await authVerif(ctx, passphrase, [
+          "admin",
+          "user"
+        ]); // securisation
+        if(!_.some(books, { id: args.bookId })){
+          throw new Error("Unknow book");
+        }
+        if(!args.title){
+          throw new Error("A comment must have a title.");
+        }
+        if(!args.comment){
+          throw new Error("A comment must have a comment to... have a comment...");
+        }
+        if(!args.eval){
+          throw new Error("A comment must have an eval.");
+        }
+        const lastId = comments[comments.length-1]?parseInt(comments[comments.length-1].id) : 0;
+
+        console.log(authUser.id)
+        const newComment = {
+          id: (lastId+1).toString(),
+          book_id: args.bookId,
+          user_id: authUser.id.toString(),
+          title: args.title,
+          com: args.comment,
+          eval: args.eval
+        }
+        comments.push(newComment);
+        return _.find(comments, { id: authUser.id });
+      }
+    }
   }
 });
 
