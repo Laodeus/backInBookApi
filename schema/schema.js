@@ -87,6 +87,13 @@ const RootQuery = new GraphQLObjectType({
         return users.slice(offset,offset+limit);
       }
     },
+    whoAmI:{
+      type: UserType,
+      async resolve(parent, args, ctx) {
+        const authUser = await authVerif(ctx, passphrase, "all"); // securisation
+        return _.find(users, { id: authUser.id });
+      }
+    },
     comment: {
       type: CommentType,
       args: { id: { type: GraphQLID } },
@@ -460,9 +467,25 @@ const Mutation = new GraphQLObjectType({
           eval: args.eval
         }
         comments.push(newComment);
-        return _.find(comments, { id: authUser.id });
+        return _.find(comments, { id: (lastId+1).toString() });
       }
-    }
+    },
+    deleteComment: {
+      type: GraphQLList(CommentType),
+      args: {
+        id: { type: GraphQLID },
+      },
+      async resolve(parent, args, ctx) {
+        await authVerif(ctx, passphrase, [
+          "admin"
+        ]); // securisation
+        if(!_.some(books, { id: args.id })){
+          throw new Error("Unknow book");
+        }
+        books.splice(_.findIndex(books, { id: args.id }), 1);
+        return books;
+      }
+    },
   }
 });
 
