@@ -119,7 +119,6 @@ let books = [
     borrower_date: "2019-08-12",
     state: ""
   },
-  ,
   {
     id: "9",
     author_id: "2",

@@ -39,10 +39,14 @@ const RootQuery = new GraphQLObjectType({
       }
     },
     books: {
+      args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
       type: new GraphQLList(BookType),
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, "all"); // securisation
-        return books;
+        offset = args.offset?parseInt(args.offset):0;
+        limit = args.limit?parseInt(args.limit):10;
+
+        return books.slice(offset,offset+limit);
       }
     },
     author: {
@@ -55,9 +59,13 @@ const RootQuery = new GraphQLObjectType({
     },
     authors: {
       type: new GraphQLList(AuthorType),
+      args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        return authors;
+        offset = args.offset?parseInt(args.offset):0;
+        limit = args.limit?parseInt(args.limit):10;
+
+        return authors.slice(offset,offset+limit);
       }
     },
     user: {
@@ -70,9 +78,13 @@ const RootQuery = new GraphQLObjectType({
     },
     users: {
       type: new GraphQLList(UserType),
+      args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        return users;
+        offset = args.offset?parseInt(args.offset):0;
+        limit = args.limit?parseInt(args.limit):10;
+
+        return users.slice(offset,offset+limit);
       }
     },
     comment: {
@@ -85,9 +97,13 @@ const RootQuery = new GraphQLObjectType({
     },
     comments: {
       type: new GraphQLList(CommentType),
+      args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        return comments;
+        offset = args.offset?parseInt(args.offset):0;
+        limit = args.limit?parseInt(args.limit):10;
+
+        return comments.slice(offset,offset+limit);
       }
     },
     login: {
