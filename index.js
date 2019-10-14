@@ -20,10 +20,10 @@ app.use(mount('/graphql', graphqlHTTP({
 
 app.use(mount('/',(ctx)=>{
   ctx.type = 'html' 
-  ctx.body = "It's not the api that you looking for... <br /><img src='http://3.bp.blogspot.com/-uq0glR1pPUw/VqEUKKBA-eI/AAAAAAAASCw/r2tQOAZBsgY/s1600/droids.gif' />"
+  ctx.body = "It's not the api that you looking for... <br /><img src='http://3.bp.blogspot.com/-uq0glR1pPUw/VqEUKKBA-eI/AAAAAAAASCw/r2tQOAZBsgY/s1600/droids.gif' />" + process.env.DATABASE_URL
 }));
 
 app.listen(port,()=>{
   console.clear();
-  console.log("The magic start below at port : " + port);
+  console.log("The magic start below at port : " + port+ " env => " + process.env.DATABASE_URL);
 });
