@@ -20,6 +20,8 @@ let books = require("./../js/dummydata/books");
 let users = require("./../js/dummydata/users");
 let authors = require("./../js/dummydata/authors");
 let comments = require("./../js/dummydata/comments");
+
+let queries = require("./../js/queries");
 /*
   a faire
   faire un systeme d'historique d'emprunt
@@ -35,7 +37,8 @@ const RootQuery = new GraphQLObjectType({
       async resolve(parent, args, ctx) {
         // code to get data from db
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        return _.find(books, { id: args.id });
+        const query = await queries.book(args.id);
+        return query;
       }
     },
     books: {
@@ -45,8 +48,8 @@ const RootQuery = new GraphQLObjectType({
         await authVerif(ctx, passphrase, ["user","admin"]); // securisation
         offset = args.offset?parseInt(args.offset):0;
         limit = args.limit?parseInt(args.limit):10;
-
-        return books.slice(offset,offset+limit);
+        const query = await queries.books(limit, offset);
+        return query;
       }
     },
     author: {
@@ -54,7 +57,8 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        return _.find(authors, { id: args.id });
+        const query = await queries.author(args.id);
+        return query;
       }
     },
     authors: {
@@ -64,8 +68,8 @@ const RootQuery = new GraphQLObjectType({
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         offset = args.offset?parseInt(args.offset):0;
         limit = args.limit?parseInt(args.limit):10;
-
-        return authors.slice(offset,offset+limit);
+        const query = await queries.authors(limit, offset);
+        return query;
       }
     },
     user: {
@@ -73,7 +77,8 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["user","admin"]); // securisation
-        return _.find(users, { id: args.id });
+        const query = await queries.user(args.id);
+        return query;
       }
     },
     users: {
@@ -83,15 +88,16 @@ const RootQuery = new GraphQLObjectType({
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         offset = args.offset?parseInt(args.offset):0;
         limit = args.limit?parseInt(args.limit):10;
-
-        return users.slice(offset,offset+limit);
+        const query = await queries.users(limit, offset);
+        return query;
       }
     },
     whoAmI:{
       type: UserType,
       async resolve(parent, args, ctx) {
         const authUser = await authVerif(ctx, passphrase, "all"); // securisation
-        return _.find(users, { id: authUser.id });
+        const query = await queries.user(authUser.id);
+        return query;
       }
     },
     comment: {
@@ -99,7 +105,8 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        return _.find(comments, { id: args.id });
+        const query = await queries.comment(args.id);
+        return query;
       }
     },
     comments: {
@@ -109,8 +116,8 @@ const RootQuery = new GraphQLObjectType({
         await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
         offset = args.offset?parseInt(args.offset):0;
         limit = args.limit?parseInt(args.limit):10;
-
-        return comments.slice(offset,offset+limit);
+        const query = await queries.comments(limit, offset);
+        return query;
       }
     },
     login: {
@@ -122,20 +129,13 @@ const RootQuery = new GraphQLObjectType({
         email: { type: GraphQLString },
         password: { type: GraphQLString }
       },
-      resolve(parent, args, ctx) {
-        const user = _.find(users, {
-          email: args.email,
-          password: args.password
-        });
-        if (user) {
-          user.token = jsonWebToken.sign(
-            { id: user.id, role: user.role },
-            passphrase
-          );
+      async resolve(parent, args, ctx) {
+          await authVerif(ctx, passphrase, ["public"]); // securisation
+          const user = await queries.login(args.email,args.password);
+          console.log(user);
+          
+          user.token = jsonWebToken.sign({ id: user.id, role: user.role },passphrase);
           return user;
-        } else {
-          throw new Error("Login Failed");
-        }
       }
     }
   }
@@ -175,18 +175,21 @@ const Mutation = new GraphQLObjectType({
           if (_.find(authors, { id: args.author_id })) {
             const lastId = books[books.length-1]?parseInt(books[books.length-1].id) : 0;
             console.log(lastId);
-            books.push({
-              id: (lastId+1).toString(),
-              title: args.title || null,
-              subtitle: args.subtitle,
-              blanket: args.blanket,
-              lang: args.lang,
-              format_book: args.format_book,
-              genre: args.genre,
-              stock: args.stock,
-              ISBN: args.ISBN,
-              author_id: args.author_id
-            });
+            // books.push({
+            //   id: (lastId+1).toString(),
+            //   title: args.title || null,
+            //   subtitle: args.subtitle,
+            //   blanket: args.blanket,
+            //   lang: args.lang,
+            //   format_book: args.format_book,
+            //   genre: args.genre,
+            //   stock: args.stock,
+            //   ISBN: args.ISBN,
+            //   author_id: args.author_id
+            // });
+
+            
+
             return books[books.length - 1];
           } else {
             throw new Error("Unknow author");

@@ -7,21 +7,28 @@ const {
 } = graphql; // extract the function GraphQLObjectType from the packqge graphql
 const _ = require("lodash");
 
+let queries = require("./../../js/queries");
+const authVerif = require("./../../js/authverif"); // when this is called, when the token or the role is incorect, it stop everything and trhow an error :D
+const passphrase = process.env.passphrase || "maPassPhraseEnDurSuperSecure";
+
 const CommentType = new GraphQLObjectType({
     name: "Comment",
     fields: () => ({
       id: { type: GraphQLID },
       book: {
         type: BookType,
-        resolve(parent, args) {
-          return _.find(books, { id: parent.book_id });
+        async resolve(parent, args) {
+          await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
+          const query = await queries.book(parent.book_id);
+          return query;
         }
       },
       user: {
         type: UserType,
-        resolve(parent, args) {
-          console.log();
-          return _.find(users, { id: parent.user_id });
+        async resolve(parent, args) {
+          console.log(parent.user_id);
+          const query = await queries.usersById(parent.user_id);
+          return query;
         }
       },
       title: { type: GraphQLString },

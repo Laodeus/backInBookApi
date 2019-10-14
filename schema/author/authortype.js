@@ -7,6 +7,11 @@ const {
 } = graphql; // extract the function GraphQLObjectType from the packqge graphql
 const _ = require("lodash");
 
+let queries = require("./../../js/queries");
+const authVerif = require("./../../js/authverif"); // when this is called, when the token or the role is incorect, it stop everything and trhow an error :D
+const passphrase = process.env.passphrase || "maPassPhraseEnDurSuperSecure";
+
+
 const AuthorType = new GraphQLObjectType({
     name: "Author",
     fields: () => ({
@@ -14,9 +19,11 @@ const AuthorType = new GraphQLObjectType({
       name: { type: GraphQLString },
       books: {
         type: new GraphQLList(BookType),
-        resolve(parent, args) {
-          return _.filter(books, { authorId: parent.id });
-        }
+        async resolve(parent, args, ctx) {
+        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
+        const query = await queries.booksById(parent.id);
+        return query;
+      }
       }
     })
   });
@@ -25,9 +32,3 @@ const AuthorType = new GraphQLObjectType({
 
   // nedded type inclusion for recursivity
 const BookType = require("./../book/booktype");
-
-// import nedded data
-const books = require("./../../js/dummydata/books");
-const users = require("./../../js/dummydata/users");
-const authors = require("./../../js/dummydata/authors");
-const comments = require("./../../js/dummydata/comments");

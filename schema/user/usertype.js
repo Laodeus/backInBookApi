@@ -4,6 +4,9 @@ const { GraphQLObjectType, GraphQLString, GraphQLID, GraphQLList } = graphql; //
 const _ = require("lodash");
 const { DateTime } = require("luxon");
 
+let queries = require("./../../js/queries");
+const authVerif = require("./../../js/authverif"); // when this is called, when the token or the role is incorect, it stop everything and trhow an error :D
+const passphrase = process.env.passphrase || "maPassPhraseEnDurSuperSecure";
 
 const UserType = new GraphQLObjectType({
   name: "User",
@@ -14,21 +17,23 @@ const UserType = new GraphQLObjectType({
     id: { type: GraphQLID },
     comment: {
       type: GraphQLList(CommentType),
-      resolve(parent, args) {
-        return _.filter(comments, { user_id: parent.id });
+      async resolve(parent, args) {
+        const query = await queries.commentsByUserId(parent.id);
+        return query;
       }
     },
     borrowed: {
       type: GraphQLList(BookType),
-      resolve(parent, args) {
-        return _.filter(books, { borrower_id: parent.id });
+      async resolve(parent, args) {
+        const query = await queries.booksByBorrowerId(parent.id);
+        return query;
       }
     },
     lateReturned: {
       type: GraphQLList(BookType),
-      resolve(parent, args) {
-        const allBorrowed = _.filter(books, { borrower_id: parent.id });
-        let allOutDated = _.filter(allBorrowed, (element)=>{
+      async resolve(parent, args) {
+       const allBorrowed = await queries.commentsByUserId(parent.id);
+       let allOutDated = _.filter(allBorrowed, (element)=>{
         console.log(`for element => ${element.title}, borow date ${element.borrower_date}`);
         ElementBorrowDate = DateTime.fromISO(element.borrower_date);
         if (ElementBorrowDate.diffNow(["days", "hours"]).toObject().days <= -30) {
