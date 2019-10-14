@@ -7,6 +7,7 @@
     "express": "^4.17.1",
     "graphql": "^14.5.8",
     "jsonwebtoken": "^8.5.1",
+    "knex": "^0.19.5",
     "koa": "^2.8.2",
     "koa-bodyparser": "^4.2.1",
     "koa-graphql": "^0.8.0",
@@ -14,7 +15,9 @@
     "koa-mount": "^4.0.0",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.15",
-    "luxon": "^1.19.3"
+    "luxon": "^1.19.3",
+    "pg": "^7.12.1",
+    "pg-hstore": "^2.3.3"
   },
   "devDependencies": {},
   "scripts": {
