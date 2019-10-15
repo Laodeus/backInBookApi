@@ -134,10 +134,10 @@ const RootQuery = new GraphQLObjectType({
       async resolve(parent, args, ctx) {
           await authVerif(ctx, passphrase, ["public"]); // securisation
           const user = await queries.login(args.email,args.password);
-          console.log(user);
+          console.log(user[0]);
           
-          user.token = jsonWebToken.sign({ id: user.id, role: user.role },passphrase);
-          return user;
+          user[0].token = jsonWebToken.sign({ id: user[0].id, role: user[0].role },passphrase);
+          return user[0];
       }
     }
   }
@@ -266,7 +266,8 @@ const Mutation = new GraphQLObjectType({
       },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["public"]); // securisation
-        mutationQueries.signUp(args);
+        const result = await mutationQueries.signUp(args);
+        return result;
       }
     },
     editUser: {
@@ -282,19 +283,9 @@ const Mutation = new GraphQLObjectType({
           "admin",
           "user"
         ]); // securisation
-        if (authUser.id == args.id || authUser.role == "admin") {
-          // si c'est un admin ou lui meme
-          let modifiedUser = Object.assign(
-            users[_.findIndex(users, { id: args.id })],
-            args.name && { name: args.name },
-            args.email && { email: args.email },
-            args.password && { password: args.password }
-          );
-          users[_.findIndex(users, { id: args.id })] = modifiedUser;
-          return _.find(users, { id: args.id });
-        } else {
-          throw new Error("unauthorised for non-admin or not your own account");
-        }
+        
+        const result = await mutationQueries.editUser(args,authUser);
+        return result;
       }
     },
     editUserRole: {
@@ -304,9 +295,7 @@ const Mutation = new GraphQLObjectType({
         role: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, [
-          "admin"
-        ]); // securisation
+        authUser = await authVerif(ctx, passphrase, "public"); // securisation
         let modifiedUser = Object.assign(
           users[_.findIndex(users, { id: args.id })],
           args.role && { role: args.role }

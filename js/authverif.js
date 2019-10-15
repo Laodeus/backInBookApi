@@ -1,12 +1,12 @@
 const jsonWebToken = require("jsonwebtoken");
 
 
-const Authverif = async (ctx, tocken, role) => {
-  if(!"public"){// pass it t false to have the possibilities to test with gaphiQL
+const Authverif = async (ctx, passphrase, role) => {
+  if(role != "public"){// pass it t false to have the possibilities to test with gaphiQL
   if (ctx.request.header.authorization) {
     const decoded = await jsonWebToken.verify(
       ctx.request.header.authorization,
-      tocken
+      passphrase
     );
     if (role.includes(decoded.role) || role == "all") {
       return decoded;

@@ -196,7 +196,7 @@ const addAuthor = async args => {
 };
 
 const signUp = async args => {
-    const last_entries = await queries.userLast();
+  const last_entries = await queries.userLast();
   if (!args.email) {
     throw new Error("email must be provided.");
   }
@@ -204,8 +204,8 @@ const signUp = async args => {
     throw new Error("password must be provided.");
   }
   const foundUser = await queries.usersByEmail(args.email);
-  if(foundUser){
-      throw new Error("Email already signed up");
+  if (foundUser) {
+    throw new Error("Email already signed up");
   }
 
   const result = await pool.query(
@@ -217,9 +217,50 @@ const signUp = async args => {
           password
           ) 
       VALUES ($1,$2,$3,$4,$5)`,
-    [last_entries.id + 1,"user", args.name||"",args.email,args.password]
+    [last_entries.id + 1, "user", args.name || "", args.email, args.password]
   );
   return result;
+};
+
+const editUser = async (args, authUser) => {
+  console.log(args);
+  console.log(authUser);
+  if (authUser.role != "admin") {
+    if (authUser.id != args.id) {
+      throw new Error("unauthorised for non-admin or not your own account");
+    }
+  }
+  if (!args.id) {
+    throw new Error("id must be provided");
+  }
+  const actualUser = await queries.usersById(args.id);
+  const result = await pool.query(
+    `UPDATE users SET
+                  email= $1,
+                  name= $2,
+                  password= $3
+                  WHERE id = $4`,
+    [
+      args.email || actualUser.email,
+      args.name || actualUser.name,
+      args.password || actualUser.password,
+      args.id
+    ]
+  );
+
+  // if (authUser.id == args.id || authUser.role == "admin") {
+  //     // si c'est un admin ou lui meme
+  //     let modifiedUser = Object.assign(
+  //       users[_.findIndex(users, { id: args.id })],
+  //       args.name && { name: args.name },
+  //       args.email && { email: args.email },
+  //       args.password && { password: args.password }
+  //     );
+  //     users[_.findIndex(users, { id: args.id })] = modifiedUser;
+  //     return _.find(users, { id: args.id });
+  //   } else {
+  //     throw new Error("unauthorised for non-admin or not your own account");
+  //   }
 };
 
 module.exports = {
@@ -229,5 +270,6 @@ module.exports = {
   borrowABook,
   returnABook,
   addAuthor,
-  signUp
+  signUp,
+  editUser
 };
