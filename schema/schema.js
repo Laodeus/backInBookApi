@@ -285,7 +285,7 @@ const Mutation = new GraphQLObjectType({
         ]); // securisation
         
         const result = await mutationQueries.editUser(args,authUser);
-        return result;
+        return result.rows;
       }
     },
     editUserRole: {
@@ -295,13 +295,10 @@ const Mutation = new GraphQLObjectType({
         role: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, "public"); // securisation
-        let modifiedUser = Object.assign(
-          users[_.findIndex(users, { id: args.id })],
-          args.role && { role: args.role }
-        );
-        users[_.findIndex(users, { id: args.id })] = modifiedUser;
-        return _.find(users, { id: args.id });
+        authUser = await authVerif(ctx, passphrase, ["admin"]); // securisation
+        const result = await mutationQueries.editUserRole(args);
+        console.log(result.rows)
+        return result.rows;
       }
     },
     addComment: {

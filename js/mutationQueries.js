@@ -223,8 +223,6 @@ const signUp = async args => {
 };
 
 const editUser = async (args, authUser) => {
-  console.log(args);
-  console.log(authUser);
   if (authUser.role != "admin") {
     if (authUser.id != args.id) {
       throw new Error("unauthorised for non-admin or not your own account");
@@ -236,10 +234,10 @@ const editUser = async (args, authUser) => {
   const actualUser = await queries.usersById(args.id);
   const result = await pool.query(
     `UPDATE users SET
-                  email= $1,
-                  name= $2,
-                  password= $3
-                  WHERE id = $4`,
+                    email= $1,
+                    name= $2,
+                    password= $3
+                    WHERE id = $4`,
     [
       args.email || actualUser.email,
       args.name || actualUser.name,
@@ -247,21 +245,23 @@ const editUser = async (args, authUser) => {
       args.id
     ]
   );
-
-  // if (authUser.id == args.id || authUser.role == "admin") {
-  //     // si c'est un admin ou lui meme
-  //     let modifiedUser = Object.assign(
-  //       users[_.findIndex(users, { id: args.id })],
-  //       args.name && { name: args.name },
-  //       args.email && { email: args.email },
-  //       args.password && { password: args.password }
-  //     );
-  //     users[_.findIndex(users, { id: args.id })] = modifiedUser;
-  //     return _.find(users, { id: args.id });
-  //   } else {
-  //     throw new Error("unauthorised for non-admin or not your own account");
-  //   }
+  return result;
 };
+const editUserRole = async args => {
+    if (!args.id) {
+    throw new Error("id must be provided");
+  }
+  if (!args.role) {
+    throw new Error("new role must be provided");
+  }
+  const result = await pool.query(
+    `UPDATE users SET role= $1 WHERE id = $2`,
+    [args.role, args.id]
+  );
+  return result;
+};
+
+/* return the user in the 3 last and comment to done. */
 
 module.exports = {
   insertIntoBooks,
@@ -271,5 +271,6 @@ module.exports = {
   returnABook,
   addAuthor,
   signUp,
-  editUser
+  editUser,
+  editUserRole
 };
