@@ -50,6 +50,41 @@ const insertIntoBooks = async (args) => {
     return result;
 };
 
+const updateIntoBooks = async (args) => {
+    const last_entries = await queries.booksLast();
+    
+    let book = await queries.book(args.author_id);
+    if (!book) {
+      throw new Error("Unknow book id");
+    }
+
+  const result = await pool.query(
+    `UPDATE books SET
+        title = $1,
+        subtitle= $2,
+        blanket= $3,
+        lang= $4,
+        format_books= $5,
+        genre= $6,
+        "ISBN"= $7,
+        author_id= $8
+         where id = $9`,
+    [
+        args.title,
+        args.subtitle||"",
+        args.blanket||"",
+        args.lang||"",
+        args.format_book||"",
+        args.genre||"",
+        args.ISBN,
+        args.author_id,
+        args.id
+    ]);
+
+    return result;
+};
+
 module.exports = {
-    insertIntoBooks
+    insertIntoBooks,
+    updateIntoBooks
 };
