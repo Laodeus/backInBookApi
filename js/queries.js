@@ -56,7 +56,7 @@ const booksCount = async id => {
 
 const booksLast = async id => {
   const result = await pool.query("SELECT * FROM books ORDER BY id DESC LIMIT 1");
-  return result.rows; // rows return an array of all rows found. if there is only one, it return an array of 1 object
+  return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
 
 

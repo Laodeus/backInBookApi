@@ -176,11 +176,7 @@ const Mutation = new GraphQLObjectType({
         if (!args.author_id && !args.title && !args.ISBN) {
           throw new Error("ISBN, Title or author can not be unset");
         }
-        let author = await queries.author(args.author_id);
-        if (!author) {
-          throw new Error("Unknow author");
-        }
-        
+
         mutationQueries.insertIntoBooks(args);
 
 
