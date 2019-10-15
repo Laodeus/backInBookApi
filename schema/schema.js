@@ -22,6 +22,8 @@ let authors = require("./../js/dummydata/authors");
 let comments = require("./../js/dummydata/comments");
 
 let queries = require("./../js/queries");
+let mutationQueries = require("./../js/mutationQueries");
+
 /*
   a faire
   faire un systeme d'historique d'emprunt
@@ -171,32 +173,44 @@ const Mutation = new GraphQLObjectType({
       },
       async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["admin"]); // securisation
-        if (args.author_id && args.title && args.ISBN) {
-          if (_.find(authors, { id: args.author_id })) {
-            const lastId = books[books.length-1]?parseInt(books[books.length-1].id) : 0;
-            console.log(lastId);
-            // books.push({
-            //   id: (lastId+1).toString(),
-            //   title: args.title || null,
-            //   subtitle: args.subtitle,
-            //   blanket: args.blanket,
-            //   lang: args.lang,
-            //   format_book: args.format_book,
-            //   genre: args.genre,
-            //   stock: args.stock,
-            //   ISBN: args.ISBN,
-            //   author_id: args.author_id
-            // });
-
-            
-
-            return books[books.length - 1];
-          } else {
-            throw new Error("Unknow author");
-          }
-        } else {
+        if (!args.author_id && !args.title && !args.ISBN) {
           throw new Error("ISBN, Title or author can not be unset");
         }
+        let author = await queries.author(args.author_id);
+        if (!author) {
+          throw new Error("Unknow author");
+        }
+        
+        mutationQueries.insertIntoBooks(args);
+
+
+
+
+
+
+
+          // if (_.find(authors, { id: args.author_id })) {
+          //   const lastId = books[books.length-1]?parseInt(books[books.length-1].id) : 0;
+          //   console.log(lastId);
+          //   // books.push({
+          //   //   id: (lastId+1).toString(),
+          //   //   title: args.title || null,
+          //   //   subtitle: args.subtitle,
+          //   //   blanket: args.blanket,
+          //   //   lang: args.lang,
+          //   //   format_book: args.format_book,
+          //   //   genre: args.genre,
+          //   //   stock: args.stock,
+          //   //   ISBN: args.ISBN,
+          //   //   author_id: args.author_id
+          //   // });
+
+
+
+          //   return books[books.length - 1];
+          // } else {
+          //   
+          // }
       }
     },
     editBook: {
@@ -217,23 +231,24 @@ const Mutation = new GraphQLObjectType({
         const authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
-        if(!_.some(books, { id: args.id })){
-          throw new Error("Unknow book");
-        }
-        let modifiedBook = Object.assign(
-          [_.findIndex(books, { id: args.id })],
-          args.name && { name: args.name },
-          args.title && { title: args.title },
-          args.subtitle && { subtitle: args.subtitle },
-          args.blanket && { blanket: args.blanket },
-          args.lang && { lang: args.lang },
-          args.format_book && { format_book: args.format_book },
-          args.genre && { genre: args.genre },
-          args.stock && { stock: args.stock },
-          args.ISBN && { ISBN: args.ISBN }
-        );
-        books[_.findIndex(books, { id: args.id })] = modifiedBook;
-        return _.find(books, { id: args.id });
+        // if(!_.some(books, { id: args.id })){
+        //   throw new Error("Unknow book");
+        // }
+        // let modifiedBook = Object.assign(
+        //   [_.findIndex(books, { id: args.id })],
+        //   args.name && { name: args.name },
+        //   args.title && { title: args.title },
+        //   args.subtitle && { subtitle: args.subtitle },
+        //   args.blanket && { blanket: args.blanket },
+        //   args.lang && { lang: args.lang },
+        //   args.format_book && { format_book: args.format_book },
+        //   args.genre && { genre: args.genre },
+        //   args.stock && { stock: args.stock },
+        //   args.ISBN && { ISBN: args.ISBN }
+        // );
+        // books[_.findIndex(books, { id: args.id })] = modifiedBook;
+        // return _.find(books, { id: args.id });
+
       }
     },
     deleteBook: {
