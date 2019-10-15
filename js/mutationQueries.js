@@ -162,7 +162,7 @@ const returnABook = async args => {
     throw new Error("Unknow user id");
   }
 
-  if(book.borrow_id != args.userId){
+  if (book.borrow_id != args.userId) {
     throw new Error("book not borrowed by this user");
   }
 
@@ -175,30 +175,52 @@ const returnABook = async args => {
   );
   const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId);
   return allAlreadyBorrowed;
-
-
 };
 
 const addAuthor = async args => {
-    const last_entries = await queries.authorLast();
-    if(!args.name){
-        throw new Error("name must be provided");
-    }
+  const last_entries = await queries.authorLast();
+  if (!args.name) {
+    throw new Error("name must be provided");
+  }
 
-    const result = await pool.query(
-      `INSERT INTO authors (
+  const result = await pool.query(
+    `INSERT INTO authors (
           id, 
           name
           ) 
       VALUES ($1,$2)`,
-      [
-        last_entries.id + 1,
-        args.name
-      ]
-    );
+    [last_entries.id + 1, args.name]
+  );
 
-    return result;
-  };
+  return result;
+};
+
+const signUp = async args => {
+    const last_entries = await queries.userLast();
+  if (!args.email) {
+    throw new Error("email must be provided.");
+  }
+  if (!args.password) {
+    throw new Error("password must be provided.");
+  }
+  const foundUser = await queries.usersByEmail(args.email);
+  if(foundUser){
+      throw new Error("Email already signed up");
+  }
+
+  const result = await pool.query(
+    `INSERT INTO users (
+          id,
+          role,
+          name,
+          email,
+          password
+          ) 
+      VALUES ($1,$2,$3,$4,$5)`,
+    [last_entries.id + 1,"user", args.name||"",args.email,args.password]
+  );
+  return result;
+};
 
 module.exports = {
   insertIntoBooks,
@@ -206,5 +228,6 @@ module.exports = {
   deleteIntoBooks,
   borrowABook,
   returnABook,
-  addAuthor
+  addAuthor,
+  signUp
 };

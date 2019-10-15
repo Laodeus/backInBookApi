@@ -116,6 +116,19 @@ const usersById = async id => {
   return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
 
+const usersByEmail = async email => {
+  if (!email) {
+    throw new Error("email needed");
+  }
+  const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
+};
+
+const userLast = async id => {
+  const result = await pool.query("SELECT * FROM users ORDER BY id DESC LIMIT 1");
+  return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
+};
+
 const comment = async id => {
   if (!id) {
     throw new Error("id needed");
@@ -167,6 +180,8 @@ module.exports = {
   user,
   users,
   usersById,
+  usersByEmail,
+  userLast,
   comment,
   comments,
   commentsByBookId,

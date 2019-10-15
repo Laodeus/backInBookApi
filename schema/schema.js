@@ -265,22 +265,7 @@ const Mutation = new GraphQLObjectType({
         password: { type: GraphQLString }
       },
       resolve(parent, args, ctx) {
-        if (args.email && args.password) {
-          if (!_.find(users, { email: args.email })) {
-            users.push({
-              id: users.length,
-              email: args.email,
-              name: args.name || null,
-              password: args.password,
-              role: "user"
-            });
-            return users[users.length - 1];
-          } else {
-            throw new Error("email already use");
-          }
-        } else {
-          throw new Error("password or email can not be unset");
-        }
+        mutationQueries.signUp(args);
       }
     },
     editUser: {
