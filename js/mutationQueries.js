@@ -114,15 +114,14 @@ const borrowABook = async args => {
     throw new Error("Unknow book id");
   }
   console.log(book);
-  if(book.borrow_id){
-
-      throw new Error("Already borrowed");
+  if (book.borrow_id) {
+    throw new Error("Already borrowed");
   }
   let user = await queries.usersById(args.userId);
   if (!user) {
     throw new Error("Unknow user id");
   }
-  
+
   const alreadyBorrowed = await queries.booksByBorrowerId(args.userId);
   if (alreadyBorrowed.length >= 5) {
     throw new Error("You already own 5 books");
@@ -138,18 +137,74 @@ const borrowABook = async args => {
   }
   const result = await pool.query(
     `UPDATE books SET
-            borrow_id = $1,
-            borrow_date= $2
-            where id = $3`,
+              borrow_id = $1,
+              borrow_date= $2
+              where id = $3`,
     [args.userId, DateTime.fromObject(Date.now()).toISODate(), args.bookId]
   );
   const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId);
   return allAlreadyBorrowed;
 };
 
+const returnABook = async args => {
+  if (!args.bookId) {
+    throw new Error("bookId not provided");
+  }
+  if (!args.userId) {
+    throw new Error("userId not provided");
+  }
+  let book = await queries.book(args.bookId);
+  if (!book) {
+    throw new Error("Unknow book id");
+  }
+  let user = await queries.usersById(args.userId);
+  if (!user) {
+    throw new Error("Unknow user id");
+  }
+
+  if(book.borrow_id != args.userId){
+    throw new Error("book not borrowed by this user");
+  }
+
+  const result = await pool.query(
+    `UPDATE books SET
+              borrow_id = '',
+              borrow_date= ''
+              where id = $1`,
+    [args.bookId]
+  );
+  const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId);
+  return allAlreadyBorrowed;
+
+
+};
+
+const addAuthor = async args => {
+    const last_entries = await queries.authorLast();
+    if(!args.name){
+        throw new Error("name must be provided");
+    }
+
+    const result = await pool.query(
+      `INSERT INTO authors (
+          id, 
+          name
+          ) 
+      VALUES ($1,$2)`,
+      [
+        last_entries.id + 1,
+        args.name
+      ]
+    );
+
+    return result;
+  };
+
 module.exports = {
   insertIntoBooks,
   updateIntoBooks,
   deleteIntoBooks,
-  borrowABook
+  borrowABook,
+  returnABook,
+  addAuthor
 };

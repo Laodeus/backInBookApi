@@ -86,6 +86,11 @@ const authors = async (limit, offset) => {
   return result.rows; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
 
+const authorLast = async id => {
+  const result = await pool.query("SELECT * FROM authors ORDER BY id DESC LIMIT 1");
+  return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
+};
+
 const user = async id => {
   if (!id) {
     throw new Error("id needed");
@@ -158,6 +163,7 @@ module.exports = {
   booksByBorrowerId,
   author,
   authors,
+  authorLast,
   user,
   users,
   usersById,

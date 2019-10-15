@@ -240,29 +240,8 @@ const Mutation = new GraphQLObjectType({
         authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
-        if(!args.bookId){throw new Error("bookId not provided");}
-        if(!args.userId){throw new Error("userId not provided");}
-        if (!_.some(users, { id: args.userId })) {
-          throw new Error("User Not found.");
-        } // not finding throw error
-        if (!_.some(books, { id: args.bookId })) {
-          throw new Error("book Not found.");
-        }
-        // si le livre est bien a l'user, on le retourne, sinon, on throw une erreur
-        if (!_.some(books, { id: args.bookId, borrower_id:args.userId })) {
-          throw new Error("This book are not assigned to this user");
-        }
-
-        let modifiedBook = Object.assign(
-          _.find(books, { id: args.bookId }),
-          args.bookId && {
-            borrower_id: "",
-            borrower_date: ""
-          }
-        );
-        books[_.findIndex(books, { id: args.bookId })] = modifiedBook;
-
-        return _.filter(books, {borrower_id: args.userId})
+        const result = await mutationQueries.returnABook(args);
+        return result;
       }
     },
     addAuthor: {
@@ -271,13 +250,11 @@ const Mutation = new GraphQLObjectType({
         name: { type: GraphQLString }
       },
       async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["admin"]); // securisation
-        authors.push({
-          id: authors.length + 1,
-          name: args.name
-        });
-        console.log(authors[authors.length - 1]);
-        return authors[authors.length - 1];
+        authUser = await authVerif(ctx, passphrase, [
+          "admin"
+        ]); // securisation
+        const result = await mutationQueries.addAuthor(args);
+        return result;
       }
     },
     signUp: {
