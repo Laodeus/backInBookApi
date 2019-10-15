@@ -264,7 +264,7 @@ const Mutation = new GraphQLObjectType({
         name: { type: GraphQLString },
         password: { type: GraphQLString }
       },
-      resolve(parent, args, ctx) {
+      async resolve(parent, args, ctx) {
         await authVerif(ctx, passphrase, ["public"]); // securisation
         mutationQueries.signUp(args);
       }
