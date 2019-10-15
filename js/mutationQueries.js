@@ -1,3 +1,5 @@
+const { DateTime } = require("luxon");
+
 let Databaseurl =
   process.env.DATABASE_URL ||
   "postgres://postgres:root@127.0.0.10:5432/postgres";
@@ -9,15 +11,13 @@ const pool = new Pool({
 
 const queries = require("./queries");
 
+const insertIntoBooks = async args => {
+  const last_entries = await queries.booksLast();
 
-
-const insertIntoBooks = async (args) => {
-    const last_entries = await queries.booksLast();
-    
-    let author = await queries.author(args.author_id);
-    if (!author) {
-      throw new Error("Unknow author");
-    }
+  let author = await queries.author(args.author_id);
+  if (!author) {
+    throw new Error("Unknow author");
+  }
   const result = await pool.query(
     `INSERT INTO books (
         id, 
@@ -34,29 +34,30 @@ const insertIntoBooks = async (args) => {
         ) 
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
     [
-        last_entries.id+1,
-        args.title,
-        args.subtitle||"",
-        args.blanket||"",
-        args.lang||"",
-        args.format_book||"",
-        "", // borrow id
-        "", // borrow date
-        args.genre||"",
-        args.ISBN,
-        args.author_id
-    ]);
+      last_entries.id + 1,
+      args.title,
+      args.subtitle || "",
+      args.blanket || "",
+      args.lang || "",
+      args.format_book || "",
+      "", // borrow id
+      "", // borrow date
+      args.genre || "",
+      args.ISBN,
+      args.author_id
+    ]
+  );
 
-    return result;
+  return result;
 };
 
-const updateIntoBooks = async (args) => {
-    const last_entries = await queries.booksLast();
-    
-    let book = await queries.book(args.id);
-    if (!book) {
-      throw new Error("Unknow book id");
-    }
+const updateIntoBooks = async args => {
+  const last_entries = await queries.booksLast();
+
+  let book = await queries.book(args.id);
+  if (!book) {
+    throw new Error("Unknow book id");
+  }
 
   const result = await pool.query(
     `UPDATE books SET
@@ -70,36 +71,85 @@ const updateIntoBooks = async (args) => {
         author_id= $8
          where id = $9`,
     [
-        args.title,
-        args.subtitle||"",
-        args.blanket||"",
-        args.lang||"",
-        args.format_book||"",
-        args.genre||"",
-        args.ISBN,
-        args.author_id,
-        args.id
-    ]);
+      args.title,
+      args.subtitle || "",
+      args.blanket || "",
+      args.lang || "",
+      args.format_book || "",
+      args.genre || "",
+      args.ISBN,
+      args.author_id,
+      args.id
+    ]
+  );
 
-    return result;
+  return result;
 };
 
-const deleteIntoBooks = async (args) => {
-    let book = await queries.book(args.id);
-    if (!book) {
-      throw new Error("Unknow book id");
-    }
+const deleteIntoBooks = async args => {
+  let book = await queries.book(args.id);
+  if (!book) {
+    throw new Error("Unknow book id");
+  }
 
   const result = await pool.query(
     `DELETE FROM books
     WHERE id = $1`,
-    [args.id]);
+    [args.id]
+  );
 
-    return result;
+  return result;
+};
+
+const borrowABook = async args => {
+  if (!args.bookId) {
+    throw new Error("bookId need to be set.");
+  } // not set throw error
+  if (!args.userId) {
+    throw new Error("userId need to be set.");
+  }
+
+  let book = await queries.book(args.bookId);
+  if (!book) {
+    throw new Error("Unknow book id");
+  }
+  console.log(book);
+  if(book.borrow_id){
+
+      throw new Error("Already borrowed");
+  }
+  let user = await queries.usersById(args.userId);
+  if (!user) {
+    throw new Error("Unknow user id");
+  }
+  
+  const alreadyBorrowed = await queries.booksByBorrowerId(args.userId);
+  if (alreadyBorrowed.length >= 5) {
+    throw new Error("You already own 5 books");
+  }
+
+  const allOutdated = alreadyBorrowed.filter(element => {
+    const ElementBorrowDate = DateTime.fromISO(element.borrow_date);
+    return ElementBorrowDate.diffNow(["days", "hours"]).toObject().days <= -30;
+  });
+
+  if (allOutdated.length > 0) {
+    throw new Error("somes books are late");
+  }
+  const result = await pool.query(
+    `UPDATE books SET
+            borrow_id = $1,
+            borrow_date= $2
+            where id = $3`,
+    [args.userId, DateTime.fromObject(Date.now()).toISODate(), args.bookId]
+  );
+  const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId);
+  return allAlreadyBorrowed;
 };
 
 module.exports = {
-    insertIntoBooks,
-    updateIntoBooks,
-    deleteIntoBooks
+  insertIntoBooks,
+  updateIntoBooks,
+  deleteIntoBooks,
+  borrowABook
 };
