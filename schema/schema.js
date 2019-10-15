@@ -197,11 +197,12 @@ const Mutation = new GraphQLObjectType({
         const authUser = await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
-        mutationQueries.updateIntoBooks(args);
+        const result = mutationQueries.updateIntoBooks(args);
+        return result;
       }
     },
     deleteBook: {
-      type: GraphQLList(BookType),
+      type: BookType,
       args: {
         id: { type: GraphQLID },
       },
@@ -209,11 +210,9 @@ const Mutation = new GraphQLObjectType({
         await authVerif(ctx, passphrase, [
           "admin"
         ]); // securisation
-        if(!_.some(books, { id: args.id })){
-          throw new Error("Unknow book");
-        }
-        books.splice(_.findIndex(books, { id: args.id }), 1);
-        return books;
+        const result = await mutationQueries.deleteIntoBooks(args);
+        console.log(result);
+        return result;
       }
     },
     borrowABook: {

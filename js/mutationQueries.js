@@ -53,7 +53,7 @@ const insertIntoBooks = async (args) => {
 const updateIntoBooks = async (args) => {
     const last_entries = await queries.booksLast();
     
-    let book = await queries.book(args.author_id);
+    let book = await queries.book(args.id);
     if (!book) {
       throw new Error("Unknow book id");
     }
@@ -84,7 +84,22 @@ const updateIntoBooks = async (args) => {
     return result;
 };
 
+const deleteIntoBooks = async (args) => {
+    let book = await queries.book(args.id);
+    if (!book) {
+      throw new Error("Unknow book id");
+    }
+
+  const result = await pool.query(
+    `DELETE FROM books
+    WHERE id = $1`,
+    [args.id]);
+
+    return result;
+};
+
 module.exports = {
     insertIntoBooks,
-    updateIntoBooks
+    updateIntoBooks,
+    deleteIntoBooks
 };
