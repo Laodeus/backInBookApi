@@ -12,7 +12,7 @@ const pool = new Pool({
 const queries = require('./queries')
 
 const insertIntoBooks = async args => {
-  const last_entries = await queries.booksLast()
+  const lastEntries = await queries.booksLast()
 
   const author = await queries.author(args.author_id)
   if (!author) {
@@ -34,7 +34,7 @@ const insertIntoBooks = async args => {
         ) 
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
     [
-      last_entries.id + 1,
+      lastEntries.id + 1,
       args.title,
       args.subtitle || '',
       args.blanket || '',
@@ -52,8 +52,6 @@ const insertIntoBooks = async args => {
 }
 
 const updateIntoBooks = async args => {
-  const last_entries = await queries.booksLast()
-
   const book = await queries.book(args.id)
   if (!book) {
     throw new Error('Unknow book id')
@@ -113,7 +111,6 @@ const borrowABook = async args => {
   if (!book) {
     throw new Error('Unknow book id')
   }
-  console.log(book)
   if (book.borrow_id) {
     throw new Error('Already borrowed')
   }
@@ -135,7 +132,7 @@ const borrowABook = async args => {
   if (allOutdated.length > 0) {
     throw new Error('somes books are late')
   }
-  const result = await pool.query(
+  await pool.query(
     `UPDATE books SET
               borrow_id = $1,
               borrow_date= $2
@@ -162,11 +159,11 @@ const returnABook = async args => {
     throw new Error('Unknow user id')
   }
 
-  if (book.borrow_id != args.userId) {
+  if (book.borrow_id !== args.userId) {
     throw new Error('book not borrowed by this user')
   }
 
-  const result = await pool.query(
+  await pool.query(
     `UPDATE books SET
               borrow_id = '',
               borrow_date= ''
@@ -178,7 +175,7 @@ const returnABook = async args => {
 }
 
 const addAuthor = async args => {
-  const last_entries = await queries.authorLast()
+  const lastEntries = await queries.authorLast()
   if (!args.name) {
     throw new Error('name must be provided')
   }
@@ -189,14 +186,14 @@ const addAuthor = async args => {
           name
           ) 
       VALUES ($1,$2)`,
-    [last_entries.id + 1, args.name]
+    [lastEntries.id + 1, args.name]
   )
 
   return result
 }
 
 const signUp = async args => {
-  const last_entries = await queries.userLast()
+  const lastEntries = await queries.userLast()
   if (!args.email) {
     throw new Error('email must be provided.')
   }
@@ -217,14 +214,14 @@ const signUp = async args => {
           password
           ) 
       VALUES ($1,$2,$3,$4,$5)`,
-    [last_entries.id + 1, 'user', args.name || '', args.email, args.password]
+    [lastEntries.id + 1, 'user', args.name || '', args.email, args.password]
   )
   return result
 }
 
 const editUser = async (args, authUser) => {
-  if (authUser.role != 'admin') {
-    if (authUser.id != args.id) {
+  if (authUser.role !== 'admin') {
+    if (authUser.id !== args.id) {
       throw new Error('unauthorised for non-admin or not your own account')
     }
   }
@@ -279,7 +276,7 @@ const addComment = async (args, authUser) => {
     throw new Error('invalide evaluation. must be a string whit a number from 0 to 5.')
   }
 
-  const last_entries = await queries.commentLast()
+  const lastEntries = await queries.commentLast()
 
   const result = await pool.query(
     `INSERT INTO comment (
@@ -291,7 +288,7 @@ const addComment = async (args, authUser) => {
           eval
           ) 
       VALUES ($1,$2,$3,$4,$5,$6)`,
-    [last_entries.id + 1, args.bookId, authUser.id, args.title, args.comment, args.eval]
+    [lastEntries.id + 1, args.bookId, authUser.id, args.title, args.comment, args.eval]
   )
   return result
 }
@@ -303,8 +300,8 @@ const deleteIntocomments = async (args, authUser) => {
     throw new Error('Unknow comment id')
   }
 
-  if (authUser.role != 'admin') {
-    if (authUser.id != comment.user_id) {
+  if (authUser.role !== 'admin') {
+    if (authUser.id !== comment.user_id) {
       throw new Error(
         'unauthorised for non-admin or not your own account'
       )
@@ -319,10 +316,6 @@ const deleteIntocomments = async (args, authUser) => {
 
   return result
 }
-
-
-
-
 
 /* return the user in the 3 last and comment to done. */
 

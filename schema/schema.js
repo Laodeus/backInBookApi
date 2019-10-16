@@ -1,6 +1,5 @@
-const jsonWebToken = require("jsonwebtoken");
-const { DateTime } = require("luxon");
-const graphql = require("graphql");
+const jsonWebToken = require('jsonwebtoken')
+const graphql = require('graphql')
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -8,21 +7,20 @@ const {
   GraphQLID,
   GraphQLInt,
   GraphQLList
-} = graphql; // extract the function GraphQLObjectType from the packqge graphql
-const _ = require("lodash");
-const authVerif = require("./../js/authverif"); // when this is called, when the token or the role is incorect, it stop everything and trhow an error :D
+} = graphql // extract the function GraphQLObjectType from the packqge graphql
+const authVerif = require('./../js/authverif') // when this is called, when the token or the role is incorect, it stop everything and trhow an error :D
 
-const passphrase = process.env.passphrase || "maPassPhraseEnDurSuperSecure";
+const passphrase = process.env.passphrase || 'maPassPhraseEnDurSuperSecure'
 
 // all type
-const BookType = require("./book/booktype");
-const AuthorType = require("./author/authortype");
-const UserType = require("./user/usertype");
-const CommentType = require("./comment/commentType");
-const LoginType = require("./login/logintype");
+const BookType = require('./book/booktype')
+const AuthorType = require('./author/authortype')
+const UserType = require('./user/usertype')
+const CommentType = require('./comment/commentType')
+const LoginType = require('./login/logintype')
 
-let queries = require("./../js/queries");
-let mutationQueries = require("./../js/mutationQueries");
+const queries = require('./../js/queries')
+const mutationQueries = require('./../js/mutationQueries')
 
 /*
   a faire
@@ -31,95 +29,95 @@ let mutationQueries = require("./../js/mutationQueries");
 */
 
 const RootQuery = new GraphQLObjectType({
-  name: "RootQueryType",
+  name: 'RootQueryType',
   fields: {
     book: {
       type: BookType,
       args: { id: { type: GraphQLID } },
-      async resolve(parent, args, ctx) {
+      async resolve (parent, args, ctx) {
         // code to get data from db
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        const query = await queries.book(args.id);
-        return query;
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const query = await queries.book(args.id)
+        return query
       }
     },
     books: {
       args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
       type: new GraphQLList(BookType),
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        offset = args.offset ? parseInt(args.offset) : 0;
-        limit = args.limit ? parseInt(args.limit) : 10;
-        const query = await queries.books(limit, offset);
-        return query;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const offset = args.offset ? parseInt(args.offset) : 0
+        const limit = args.limit ? parseInt(args.limit) : 10
+        const query = await queries.books(limit, offset)
+        return query
       }
     },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        const query = await queries.author(args.id);
-        return query;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const query = await queries.author(args.id)
+        return query
       }
     },
     authors: {
       type: new GraphQLList(AuthorType),
       args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        offset = args.offset ? parseInt(args.offset) : 0;
-        limit = args.limit ? parseInt(args.limit) : 10;
-        const query = await queries.authors(limit, offset);
-        return query;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const offset = args.offset ? parseInt(args.offset) : 0
+        const limit = args.limit ? parseInt(args.limit) : 10
+        const query = await queries.authors(limit, offset)
+        return query
       }
     },
     user: {
       type: UserType,
       args: { id: { type: GraphQLID } },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        const query = await queries.user(args.id);
-        return query;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const query = await queries.user(args.id)
+        return query
       }
     },
     users: {
       type: new GraphQLList(UserType),
       args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        offset = args.offset ? parseInt(args.offset) : 0;
-        limit = args.limit ? parseInt(args.limit) : 10;
-        const query = await queries.users(limit, offset);
-        return query;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const offset = args.offset ? parseInt(args.offset) : 0
+        const limit = args.limit ? parseInt(args.limit) : 10
+        const query = await queries.users(limit, offset)
+        return query
       }
     },
     whoAmI: {
       type: UserType,
-      async resolve(parent, args, ctx) {
-        const authUser = await authVerif(ctx, passphrase, "all"); // securisation
-        const query = await queries.user(authUser.id);
-        return query;
+      async resolve (parent, args, ctx) {
+        const authUser = await authVerif(ctx, passphrase, 'all') // securisation
+        const query = await queries.user(authUser.id)
+        return query
       }
     },
     comment: {
       type: CommentType,
       args: { id: { type: GraphQLID } },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        const query = await queries.comment(args.id);
-        return query;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const query = await queries.comment(args.id)
+        return query
       }
     },
     comments: {
       type: new GraphQLList(CommentType),
       args: { offset: { type: GraphQLID }, limit: { type: GraphQLInt } },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["user", "admin"]); // securisation
-        offset = args.offset ? parseInt(args.offset) : 0;
-        limit = args.limit ? parseInt(args.limit) : 10;
-        const query = await queries.comments(limit, offset);
-        return query;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['user', 'admin']) // securisation
+        const offset = args.offset ? parseInt(args.offset) : 0
+        const limit = args.limit ? parseInt(args.limit) : 10
+        const query = await queries.comments(limit, offset)
+        return query
       }
     },
     login: {
@@ -130,23 +128,21 @@ const RootQuery = new GraphQLObjectType({
         email: { type: GraphQLString },
         password: { type: GraphQLString }
       },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["public"]); // securisation
-        const user = await queries.login(args.email, args.password);
-        console.log(user[0]);
-
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['public']) // securisation
+        const user = await queries.login(args.email, args.password)
         user[0].token = jsonWebToken.sign(
           { id: user[0].id, role: user[0].role },
           passphrase
-        );
-        return user[0];
+        )
+        return user[0]
       }
     }
   }
-});
+})
 
 const Mutation = new GraphQLObjectType({
-  name: "Mutation",
+  name: 'Mutation',
   description: `signUp // free access.
   addBooks // admin role only
   editBook // admin role only
@@ -173,13 +169,13 @@ const Mutation = new GraphQLObjectType({
         stock: { type: GraphQLInt },
         ISBN: { type: GraphQLString }
       },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["admin"]); // securisation
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['admin']) // securisation
         if (!args.author_id && !args.title && !args.ISBN) {
-          throw new Error("ISBN, Title or author can not be unset");
+          throw new Error('ISBN, Title or author can not be unset')
         }
 
-        mutationQueries.insertIntoBooks(args);
+        mutationQueries.insertIntoBooks(args)
       }
     },
     editBook: {
@@ -195,10 +191,10 @@ const Mutation = new GraphQLObjectType({
         genre: { type: GraphQLString },
         ISBN: { type: GraphQLString }
       },
-      async resolve(parent, args, ctx) {
-        const authUser = await authVerif(ctx, passphrase, ["admin"]); // securisation
-        const result = mutationQueries.updateIntoBooks(args);
-        return result;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['admin']) // securisation
+        const result = mutationQueries.updateIntoBooks(args)
+        return result
       }
     },
     deleteBook: {
@@ -206,11 +202,10 @@ const Mutation = new GraphQLObjectType({
       args: {
         id: { type: GraphQLID }
       },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["admin"]); // securisation
-        const result = await mutationQueries.deleteIntoBooks(args);
-        console.log(result);
-        return result;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['admin']) // securisation
+        const result = await mutationQueries.deleteIntoBooks(args)
+        return result
       }
     },
     borrowABook: {
@@ -219,11 +214,11 @@ const Mutation = new GraphQLObjectType({
         bookId: { type: GraphQLID },
         userId: { type: GraphQLID }
       },
-      async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, ["admin"]); // securisation
-        const result = await mutationQueries.borrowABook(args);
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['admin']) // securisation
+        const result = await mutationQueries.borrowABook(args)
 
-        return result;
+        return result
       }
     },
     returnABook: {
@@ -232,10 +227,10 @@ const Mutation = new GraphQLObjectType({
         bookId: { type: GraphQLID },
         userId: { type: GraphQLID }
       },
-      async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, ["admin"]); // securisation
-        const result = await mutationQueries.returnABook(args);
-        return result;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['admin']) // securisation
+        const result = await mutationQueries.returnABook(args)
+        return result
       }
     },
     addAuthor: {
@@ -243,10 +238,10 @@ const Mutation = new GraphQLObjectType({
       args: {
         name: { type: GraphQLString }
       },
-      async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, ["admin"]); // securisation
-        const result = await mutationQueries.addAuthor(args);
-        return result;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['admin']) // securisation
+        const result = await mutationQueries.addAuthor(args)
+        return result
       }
     },
     signUp: {
@@ -256,10 +251,10 @@ const Mutation = new GraphQLObjectType({
         name: { type: GraphQLString },
         password: { type: GraphQLString }
       },
-      async resolve(parent, args, ctx) {
-        await authVerif(ctx, passphrase, ["public"]); // securisation
-        const result = await mutationQueries.signUp(args);
-        return result;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['public']) // securisation
+        const result = await mutationQueries.signUp(args)
+        return result
       }
     },
     editUser: {
@@ -270,11 +265,11 @@ const Mutation = new GraphQLObjectType({
         email: { type: GraphQLID },
         password: { type: GraphQLID }
       },
-      async resolve(parent, args, ctx) {
-        const authUser = await authVerif(ctx, passphrase, ["admin", "user"]); // securisation
+      async resolve (parent, args, ctx) {
+        const authUser = await authVerif(ctx, passphrase, ['admin', 'user']) // securisation
 
-        const result = await mutationQueries.editUser(args, authUser);
-        return result.rows;
+        const result = await mutationQueries.editUser(args, authUser)
+        return result.rows
       }
     },
     editUserRole: {
@@ -283,10 +278,10 @@ const Mutation = new GraphQLObjectType({
         id: { type: GraphQLID },
         role: { type: GraphQLString }
       },
-      async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, ["admin"]); // securisation
-        const result = await mutationQueries.editUserRole(args);
-        return result.rows;
+      async resolve (parent, args, ctx) {
+        await authVerif(ctx, passphrase, ['admin']) // securisation
+        const result = await mutationQueries.editUserRole(args)
+        return result.rows
       }
     },
     addComment: {
@@ -297,10 +292,10 @@ const Mutation = new GraphQLObjectType({
         comment: { type: GraphQLString },
         eval: { type: GraphQLString }
       },
-      async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, ["admin", "user"]); // securisation
-        const result = await mutationQueries.addComment(args, authUser);
-        return result;
+      async resolve (parent, args, ctx) {
+        const authUser = await authVerif(ctx, passphrase, ['admin', 'user']) // securisation
+        const result = await mutationQueries.addComment(args, authUser)
+        return result
       }
     },
     deleteComment: {
@@ -308,18 +303,16 @@ const Mutation = new GraphQLObjectType({
       args: {
         id: { type: GraphQLID }
       },
-      async resolve(parent, args, ctx) {
-        authUser = await authVerif(ctx, passphrase, ["admin", "user"]); // securisation
-        
-        const result = await mutationQueries.deleteIntocomments(args,authUser);
-        console.log(result)
-        return result.rows;
+      async resolve (parent, args, ctx) {
+        const authUser = await authVerif(ctx, passphrase, ['admin', 'user'])
+        const result = await mutationQueries.deleteIntocomments(args, authUser)
+        return result.rows
       }
     }
   }
-});
+})
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
   mutation: Mutation
-});
+})
