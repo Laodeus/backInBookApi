@@ -21,13 +21,6 @@ const UserType = require("./user/usertype");
 const CommentType = require("./comment/commentType");
 const LoginType = require("./login/logintype");
 
-// all Data
-// import nedded data
-let books = require("./../js/dummydata/books");
-let users = require("./../js/dummydata/users");
-let authors = require("./../js/dummydata/authors");
-let comments = require("./../js/dummydata/comments");
-
 let queries = require("./../js/queries");
 let mutationQueries = require("./../js/mutationQueries");
 

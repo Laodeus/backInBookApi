@@ -52,9 +52,3 @@ module.exports = UserType;
 // nedded type inclusion for recursivity
 const CommentType = require("./../comment/commentType");
 const BookType = require("./../book/booktype");
-
-// import nedded data
-const books = require("./../../js/dummydata/books");
-const users = require("./../../js/dummydata/users");
-const authors = require("./../../js/dummydata/authors");
-const comments = require("./../../js/dummydata/comments");

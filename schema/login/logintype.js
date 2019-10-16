@@ -17,6 +17,6 @@ const LoginType = new GraphQLObjectType({
       id: { type: GraphQLID },
       token : { type: GraphQLString }
     })
-  });
+  }); 
 
   module.exports = LoginType;

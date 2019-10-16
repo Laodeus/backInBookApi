@@ -3,7 +3,7 @@ const graphql = require("graphql");
 const {
   GraphQLObjectType,
   GraphQLString,
-  GraphQLID,
+  GraphQLID, 
   GraphQLInt,
   GraphQLList
 } = graphql; // extract the function GraphQLObjectType from the packqge graphql

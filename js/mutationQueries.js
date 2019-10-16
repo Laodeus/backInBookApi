@@ -1,22 +1,22 @@
-const { DateTime } = require("luxon");
+const { DateTime } = require('luxon')
 
-let Databaseurl =
+const Databaseurl =
   process.env.DATABASE_URL ||
-  "postgres://postgres:root@127.0.0.10:5432/postgres";
+  'postgres://postgres:root@127.0.0.10:5432/postgres'
 
-const Pool = require("pg").Pool;
+const Pool = require('pg').Pool
 const pool = new Pool({
   connectionString: Databaseurl
-});
+})
 
-const queries = require("./queries");
+const queries = require('./queries')
 
 const insertIntoBooks = async args => {
-  const last_entries = await queries.booksLast();
+  const last_entries = await queries.booksLast()
 
-  let author = await queries.author(args.author_id);
+  const author = await queries.author(args.author_id)
   if (!author) {
-    throw new Error("Unknow author");
+    throw new Error('Unknow author')
   }
   const result = await pool.query(
     `INSERT INTO books (
@@ -36,27 +36,27 @@ const insertIntoBooks = async args => {
     [
       last_entries.id + 1,
       args.title,
-      args.subtitle || "",
-      args.blanket || "",
-      args.lang || "",
-      args.format_book || "",
-      "", // borrow id
-      "", // borrow date
-      args.genre || "",
+      args.subtitle || '',
+      args.blanket || '',
+      args.lang || '',
+      args.format_book || '',
+      '', // borrow id
+      '', // borrow date
+      args.genre || '',
       args.ISBN,
       args.author_id
     ]
-  );
+  )
 
-  return result;
-};
+  return result
+}
 
 const updateIntoBooks = async args => {
-  const last_entries = await queries.booksLast();
+  const last_entries = await queries.booksLast()
 
-  let book = await queries.book(args.id);
+  const book = await queries.book(args.id)
   if (!book) {
-    throw new Error("Unknow book id");
+    throw new Error('Unknow book id')
   }
 
   const result = await pool.query(
@@ -72,68 +72,68 @@ const updateIntoBooks = async args => {
          where id = $9`,
     [
       args.title,
-      args.subtitle || "",
-      args.blanket || "",
-      args.lang || "",
-      args.format_book || "",
-      args.genre || "",
+      args.subtitle || '',
+      args.blanket || '',
+      args.lang || '',
+      args.format_book || '',
+      args.genre || '',
       args.ISBN,
       args.author_id,
       args.id
     ]
-  );
+  )
 
-  return result;
-};
+  return result
+}
 
 const deleteIntoBooks = async args => {
-  let book = await queries.book(args.id);
+  const book = await queries.book(args.id)
   if (!book) {
-    throw new Error("Unknow book id");
+    throw new Error('Unknow book id')
   }
 
   const result = await pool.query(
     `DELETE FROM books
     WHERE id = $1`,
     [args.id]
-  );
+  )
 
-  return result;
-};
+  return result
+}
 
 const borrowABook = async args => {
   if (!args.bookId) {
-    throw new Error("bookId need to be set.");
+    throw new Error('bookId need to be set.')
   } // not set throw error
   if (!args.userId) {
-    throw new Error("userId need to be set.");
+    throw new Error('userId need to be set.')
   }
 
-  let book = await queries.book(args.bookId);
+  const book = await queries.book(args.bookId)
   if (!book) {
-    throw new Error("Unknow book id");
+    throw new Error('Unknow book id')
   }
-  console.log(book);
+  console.log(book)
   if (book.borrow_id) {
-    throw new Error("Already borrowed");
+    throw new Error('Already borrowed')
   }
-  let user = await queries.usersById(args.userId);
+  const user = await queries.usersById(args.userId)
   if (!user) {
-    throw new Error("Unknow user id");
+    throw new Error('Unknow user id')
   }
 
-  const alreadyBorrowed = await queries.booksByBorrowerId(args.userId);
+  const alreadyBorrowed = await queries.booksByBorrowerId(args.userId)
   if (alreadyBorrowed.length >= 5) {
-    throw new Error("You already own 5 books");
+    throw new Error('You already own 5 books')
   }
 
   const allOutdated = alreadyBorrowed.filter(element => {
-    const ElementBorrowDate = DateTime.fromISO(element.borrow_date);
-    return ElementBorrowDate.diffNow(["days", "hours"]).toObject().days <= -30;
-  });
+    const ElementBorrowDate = DateTime.fromISO(element.borrow_date)
+    return ElementBorrowDate.diffNow(['days', 'hours']).toObject().days <= -30
+  })
 
   if (allOutdated.length > 0) {
-    throw new Error("somes books are late");
+    throw new Error('somes books are late')
   }
   const result = await pool.query(
     `UPDATE books SET
@@ -141,29 +141,29 @@ const borrowABook = async args => {
               borrow_date= $2
               where id = $3`,
     [args.userId, DateTime.fromObject(Date.now()).toISODate(), args.bookId]
-  );
-  const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId);
-  return allAlreadyBorrowed;
-};
+  )
+  const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId)
+  return allAlreadyBorrowed
+}
 
 const returnABook = async args => {
   if (!args.bookId) {
-    throw new Error("bookId not provided");
+    throw new Error('bookId not provided')
   }
   if (!args.userId) {
-    throw new Error("userId not provided");
+    throw new Error('userId not provided')
   }
-  let book = await queries.book(args.bookId);
+  const book = await queries.book(args.bookId)
   if (!book) {
-    throw new Error("Unknow book id");
+    throw new Error('Unknow book id')
   }
-  let user = await queries.usersById(args.userId);
+  const user = await queries.usersById(args.userId)
   if (!user) {
-    throw new Error("Unknow user id");
+    throw new Error('Unknow user id')
   }
 
   if (book.borrow_id != args.userId) {
-    throw new Error("book not borrowed by this user");
+    throw new Error('book not borrowed by this user')
   }
 
   const result = await pool.query(
@@ -172,15 +172,15 @@ const returnABook = async args => {
               borrow_date= ''
               where id = $1`,
     [args.bookId]
-  );
-  const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId);
-  return allAlreadyBorrowed;
-};
+  )
+  const allAlreadyBorrowed = await queries.booksByBorrowerId(args.userId)
+  return allAlreadyBorrowed
+}
 
 const addAuthor = async args => {
-  const last_entries = await queries.authorLast();
+  const last_entries = await queries.authorLast()
   if (!args.name) {
-    throw new Error("name must be provided");
+    throw new Error('name must be provided')
   }
 
   const result = await pool.query(
@@ -190,22 +190,22 @@ const addAuthor = async args => {
           ) 
       VALUES ($1,$2)`,
     [last_entries.id + 1, args.name]
-  );
+  )
 
-  return result;
-};
+  return result
+}
 
 const signUp = async args => {
-  const last_entries = await queries.userLast();
+  const last_entries = await queries.userLast()
   if (!args.email) {
-    throw new Error("email must be provided.");
+    throw new Error('email must be provided.')
   }
   if (!args.password) {
-    throw new Error("password must be provided.");
+    throw new Error('password must be provided.')
   }
-  const foundUser = await queries.usersByEmail(args.email);
+  const foundUser = await queries.usersByEmail(args.email)
   if (foundUser) {
-    throw new Error("Email already signed up");
+    throw new Error('Email already signed up')
   }
 
   const result = await pool.query(
@@ -217,21 +217,21 @@ const signUp = async args => {
           password
           ) 
       VALUES ($1,$2,$3,$4,$5)`,
-    [last_entries.id + 1, "user", args.name || "", args.email, args.password]
-  );
-  return result;
-};
+    [last_entries.id + 1, 'user', args.name || '', args.email, args.password]
+  )
+  return result
+}
 
 const editUser = async (args, authUser) => {
-  if (authUser.role != "admin") {
+  if (authUser.role != 'admin') {
     if (authUser.id != args.id) {
-      throw new Error("unauthorised for non-admin or not your own account");
+      throw new Error('unauthorised for non-admin or not your own account')
     }
   }
   if (!args.id) {
-    throw new Error("id must be provided");
+    throw new Error('id must be provided')
   }
-  const actualUser = await queries.usersById(args.id);
+  const actualUser = await queries.usersById(args.id)
   const result = await pool.query(
     `UPDATE users SET
                     email= $1,
@@ -244,43 +244,43 @@ const editUser = async (args, authUser) => {
       args.password || actualUser.password,
       args.id
     ]
-  );
-  return result;
-};
+  )
+  return result
+}
 const editUserRole = async args => {
   if (!args.id) {
-    throw new Error("id must be provided");
+    throw new Error('id must be provided')
   }
   if (!args.role) {
-    throw new Error("new role must be provided");
+    throw new Error('new role must be provided')
   }
-  const result = await pool.query(`UPDATE users SET role= $1 WHERE id = $2`, [
+  const result = await pool.query('UPDATE users SET role= $1 WHERE id = $2', [
     args.role,
     args.id
-  ]);
-  return result;
-};
+  ])
+  return result
+}
 
-const addComment = async (args,authUser) =>{
-  let book = await queries.book(args.bookId);
+const addComment = async (args, authUser) => {
+  const book = await queries.book(args.bookId)
   if (!book) {
-    throw new Error("Unknow book id");
+    throw new Error('Unknow book id')
   }
-  if(!args.title){
-    throw new Error("A comment must have a title.");
+  if (!args.title) {
+    throw new Error('A comment must have a title.')
   }
-  if(!args.comment){
-    throw new Error("A comment must have a comment to... have a comment...");
+  if (!args.comment) {
+    throw new Error('A comment must have a comment to... have a comment...')
   }
-  if(!args.eval){
-    throw new Error("A comment must have an evaluation.");
+  if (!args.eval) {
+    throw new Error('A comment must have an evaluation.')
   }
-  if(!(parseInt(args.eval) <= 5 && parseInt(args.eval) >= 0)){
-    throw new Error("invalide evaluation. must be a string whit a number from 0 to 5.");
+  if (!(parseInt(args.eval) <= 5 && parseInt(args.eval) >= 0)) {
+    throw new Error('invalide evaluation. must be a string whit a number from 0 to 5.')
   }
 
-  const last_entries = await queries.commentLast();
-  
+  const last_entries = await queries.commentLast()
+
   const result = await pool.query(
     `INSERT INTO comment (
           id, 
@@ -292,22 +292,22 @@ const addComment = async (args,authUser) =>{
           ) 
       VALUES ($1,$2,$3,$4,$5,$6)`,
     [last_entries.id + 1, args.bookId, authUser.id, args.title, args.comment, args.eval]
-  );  
-  return result;
+  )
+  return result
 }
 
-const deleteIntocomments = async (args,authUser) => {
-  let comment = await queries.comment(args.id);
-  
+const deleteIntocomments = async (args, authUser) => {
+  const comment = await queries.comment(args.id)
+
   if (!comment) {
-    throw new Error("Unknow comment id");
+    throw new Error('Unknow comment id')
   }
 
-  if (authUser.role != "admin") {
+  if (authUser.role != 'admin') {
     if (authUser.id != comment.user_id) {
       throw new Error(
-        "unauthorised for non-admin or not your own account"
-      );
+        'unauthorised for non-admin or not your own account'
+      )
     }
   }
 
@@ -315,10 +315,10 @@ const deleteIntocomments = async (args,authUser) => {
     `DELETE FROM comment
     WHERE id = $1`,
     [args.id]
-  );
+  )
 
-  return result;
-};
+  return result
+}
 
 
 
@@ -338,4 +338,4 @@ module.exports = {
   editUserRole,
   addComment,
   deleteIntocomments
-};
+}
