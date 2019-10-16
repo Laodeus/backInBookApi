@@ -296,6 +296,34 @@ const addComment = async (args,authUser) =>{
   return result;
 }
 
+const deleteIntocomments = async (args,authUser) => {
+  let comment = await queries.comment(args.id);
+  
+  if (!comment) {
+    throw new Error("Unknow comment id");
+  }
+
+  if (authUser.role != "admin") {
+    if (authUser.id != comment.user_id) {
+      throw new Error(
+        "unauthorised for non-admin or not your own account"
+      );
+    }
+  }
+
+  const result = await pool.query(
+    `DELETE FROM comment
+    WHERE id = $1`,
+    [args.id]
+  );
+
+  return result;
+};
+
+
+
+
+
 /* return the user in the 3 last and comment to done. */
 
 module.exports = {
@@ -308,5 +336,6 @@ module.exports = {
   signUp,
   editUser,
   editUserRole,
-  addComment
+  addComment,
+  deleteIntocomments
 };
