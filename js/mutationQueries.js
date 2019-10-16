@@ -248,18 +248,53 @@ const editUser = async (args, authUser) => {
   return result;
 };
 const editUserRole = async args => {
-    if (!args.id) {
+  if (!args.id) {
     throw new Error("id must be provided");
   }
   if (!args.role) {
     throw new Error("new role must be provided");
   }
-  const result = await pool.query(
-    `UPDATE users SET role= $1 WHERE id = $2`,
-    [args.role, args.id]
-  );
+  const result = await pool.query(`UPDATE users SET role= $1 WHERE id = $2`, [
+    args.role,
+    args.id
+  ]);
   return result;
 };
+
+const addComment = async (args,authUser) =>{
+  let book = await queries.book(args.bookId);
+  if (!book) {
+    throw new Error("Unknow book id");
+  }
+  if(!args.title){
+    throw new Error("A comment must have a title.");
+  }
+  if(!args.comment){
+    throw new Error("A comment must have a comment to... have a comment...");
+  }
+  if(!args.eval){
+    throw new Error("A comment must have an evaluation.");
+  }
+  if(!(parseInt(args.eval) <= 5 && parseInt(args.eval) >= 0)){
+    throw new Error("invalide evaluation. must be a string whit a number from 0 to 5.");
+  }
+
+  const last_entries = await queries.commentLast();
+  
+  const result = await pool.query(
+    `INSERT INTO comment (
+          id, 
+          book_id,
+          user_id,
+          title,
+          com,
+          eval
+          ) 
+      VALUES ($1,$2,$3,$4,$5,$6)`,
+    [last_entries.id + 1, args.bookId, authUser.id, args.title, args.comment, args.eval]
+  );  
+  return result;
+}
 
 /* return the user in the 3 last and comment to done. */
 
@@ -272,5 +307,6 @@ module.exports = {
   addAuthor,
   signUp,
   editUser,
-  editUserRole
+  editUserRole,
+  addComment
 };

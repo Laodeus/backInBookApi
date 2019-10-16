@@ -55,10 +55,11 @@ const booksCount = async id => {
 };
 
 const booksLast = async id => {
-  const result = await pool.query("SELECT * FROM books ORDER BY id DESC LIMIT 1");
+  const result = await pool.query(
+    "SELECT * FROM books ORDER BY id DESC LIMIT 1"
+  );
   return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
-
 
 const booksByBorrowerId = async id => {
   if (!id) {
@@ -87,7 +88,9 @@ const authors = async (limit, offset) => {
 };
 
 const authorLast = async id => {
-  const result = await pool.query("SELECT * FROM authors ORDER BY id DESC LIMIT 1");
+  const result = await pool.query(
+    "SELECT * FROM authors ORDER BY id DESC LIMIT 1"
+  );
   return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
 
@@ -120,12 +123,16 @@ const usersByEmail = async email => {
   if (!email) {
     throw new Error("email needed");
   }
-  const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+    email
+  ]);
   return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
 
 const userLast = async id => {
-  const result = await pool.query("SELECT * FROM users ORDER BY id DESC LIMIT 1");
+  const result = await pool.query(
+    "SELECT * FROM users ORDER BY id DESC LIMIT 1"
+  );
   return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
 
@@ -166,6 +173,13 @@ const commentsByUserId = async id => {
   return result.rows; // rows return an array of all rows found. if there is only one, it return an array of 1 object
 };
 
+const commentLast = async () => {
+  const result = await pool.query(
+    "SELECT * FROM comment ORDER BY id DESC LIMIT 1"
+  );
+  return result.rows[0]; // rows return an array of all rows found. if there is only one, it return an array of 1 object
+};
+
 module.exports = {
   login,
   book,
@@ -185,5 +199,6 @@ module.exports = {
   comment,
   comments,
   commentsByBookId,
-  commentsByUserId
+  commentsByUserId,
+  commentLast
 };

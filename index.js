@@ -15,7 +15,8 @@ const mySchema = require("./schema/schema");
 const app = new Koa();
 
 app.use(mount('/graphql', graphqlHTTP({ 
-  schema: mySchema
+  schema: mySchema,
+  graphiql : true
 })));
 
 app.use(mount('/',(ctx)=>{
